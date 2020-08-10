@@ -1,4 +1,4 @@
-# DataHub
+<img src="https://github.com/le1nux/datahub/blob/master/logo/logo.png" width="350">
 
 a stream-based file storage solution for machine learning datasets.
 
