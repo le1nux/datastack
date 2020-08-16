@@ -7,18 +7,11 @@ from data_hub.mnist.preprocessor import MNISTPreprocessor
 from data_hub.dataset.factory import DatasetFactory
 from data_hub.dataset.iterator import DatasetIteratorIF
 from data_hub.mnist.iterator import MNISTIterator
-from dataclasses import dataclass
 from data_hub.exception import ResourceNotFoundError
 from matplotlib import pyplot as plt
 
 
 class MNISTFactory(DatasetFactory):
-
-    @dataclass
-    class ResourceDefinition:
-        identifier: str
-        source: str
-        md5_sum: str
 
     def __init__(self, storage_connector: StorageConnector):
         self.raw_path = "mnist/raw/"

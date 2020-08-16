@@ -44,7 +44,7 @@ class MNISTPreprocessor:
 
     @classmethod
     def _read_label_file(cls, resource: StreamedResource):
-        data = resource.buffer.read()
+        data = resource.read()
         assert cls._get_int(data[:4]) == 2049
         length = cls._get_int(data[4:8])
         parsed = np.frombuffer(data, dtype=np.uint8, offset=8)
@@ -54,7 +54,7 @@ class MNISTPreprocessor:
 
     @classmethod
     def _read_image_file(cls, resource: StreamedResource):
-        data = resource.buffer.read()
+        data = resource.read()
         assert cls._get_int(data[:4]) == 2051
         length = cls._get_int(data[4:8])
         num_rows = cls._get_int(data[8:12])

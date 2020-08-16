@@ -1,25 +1,12 @@
 from abc import ABC, abstractmethod
-# from data_hub.util.logger import logger
-# from data_hubStorageConnector.exception import MalformedIdentifierError
 import io
-from typing import BinaryIO, abstractproperty, AnyStr, List
-
-
-class ResourceType:
-    BINARY = "binary"
-    TEXTUAL = "textual"
-
-    # mapping = {"+bin": BINARY, "+txt": TEXTUAL}
-
-    @classmethod
-    def get_resource_type(cls, identifier: str):
-        return cls.BINARY
+from typing import BinaryIO, AnyStr, List
 
 
 class ResourceFactory:
     @staticmethod
     def get_resource(identifier: str, file_like_object, in_memory: bool = True, chunk_size: int = 1024) -> "StreamedResource":
-        return StreamedBinaryResource(identifier, file_like_object, in_memory, chunk_size)
+        return StreamedResource(identifier, file_like_object, chunk_size)
 
 
 class IterableIF(ABC):
@@ -29,115 +16,112 @@ class IterableIF(ABC):
         raise NotImplementedError
 
 
-class StreamedResource(IterableIF):
-    """"Implements Iterable and context manager"""
+class Buffer(IterableIF):
+    def __init__(self, buffer: io.IOBase, chunk_size: int = 1024):
+        self._chunk_size = chunk_size
+        self._buffer = buffer
 
-    def __init__(self, identifier: str, buffer: io.IOBase):
-        self.identifier = identifier
-        self.buffer = buffer
+    # ==============================PROPERTIES==================================
 
-    @abstractmethod
-    def replace_buffer(self, buffer: BinaryIO, in_place: bool = False):
-        raise NotImplementedError
+    @property
+    def chunk_size(self) -> int:
+        return self._chunk_size
 
-    # ===========================CONTEXT=MANAGER===============================
-
-    @abstractmethod
-    def __enter__(self) -> "StreamedResource":
-        raise NotImplementedError
-
-    @abstractmethod
-    def __exit__(self):
-        raise NotImplementedError
-
-    # ========================IO=METHOD=WRAPPERS==============================
-
-    def close(self) -> None:
-        self.buffer.close()
-
-    def closed(self) -> bool:
-        return self.buffer.closed()
-
-    def fileno(self) -> int:
-        return self.buffer.fileno()
-
-    # read methods
-
-    def read(self, n: int = -1) -> AnyStr:
-        return self.buffer.read(n)
-
-    def readable(self) -> bool:
-        return self.buffer.readable()
-
-    def readline(self, limit: int = -1) -> AnyStr:
-        return self.buffer.readline(limit)
-
-    def readlines(self, hint: int = -1) -> List[AnyStr]:
-        return self.buffer.readlines(hint)
-
-    # stream position operations
-
-    def seek(self, offset: int, whence: int = 0) -> int:
-        return self.buffer.seek(offset, whence)
-
-    def seekable(self) -> bool:
-        return self.buffer.seekable()
-
-    def tell(self) -> int:
-        return self.buffer.tell()
-
-    # write methods
-
-    def writable(self) -> bool:
-        pass
-
-    def write(self, s: AnyStr) -> int:
-        pass
-
-    def writelines(self, lines: List[AnyStr]) -> None:
-        pass
-
-    def flush(self) -> None:
-        self.buffer.flush()
-
-
-class StreamedBinaryResource(StreamedResource):
-
-    def __init__(self, identifier: str, file_like: BinaryIO, copy_to_memory: bool = False, chunk_size: int = 1024):
-        self.copy_to_memory = copy_to_memory
-        self.chunk_size = chunk_size
-        buffer: BinaryIO = self._load_to_memory(file_like) if copy_to_memory else file_like
-        super().__init__(identifier, buffer)
+    # ==============================ITERATOR====================================
 
     def __iter__(self):
-        self.buffer.seek(0)
+        self._buffer.seek(0)
         while True:
-            chunk = self.buffer.read(self.chunk_size)
+            chunk = self._buffer.read(self.chunk_size)
             if chunk:
                 yield chunk
             else:
                 break
 
-    def _load_to_memory(self, file_like) -> BinaryIO:
-        bytesIO_buffer = io.BytesIO(file_like.read())
-        file_like.close()
-        return bytesIO_buffer
+    # ===========================CONTEXT=MANAGER===============================
 
-    def __enter__(self) -> "StreamedBinaryResource":
+    def __enter__(self) -> "StreamedResource":
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
         if exc_type is not None:
             print(f"Ecxception: {exc_type}")
-        self.buffer.close()
+        self._buffer.close()
 
-    def close(self):
-        self.buffer.close()
+    # ========================IO=METHOD=WRAPPERS==============================
 
-    def replace_buffer(self, buffer: BinaryIO, in_place: bool = False):
-        if in_place:
-            self.buffer = buffer
-            return self
+    def close(self) -> None:
+        self._buffer.close()
 
-        else:
-            return StreamedBinaryResource(self.identifier, buffer, False, self.chunk_size)
+    @property
+    def closed(self) -> bool:
+        return self._buffer.closed
+
+    def fileno(self) -> int:
+        return self._buffer.fileno()
+
+    # read methods
+
+    def read(self, n: int = -1) -> AnyStr:
+        return self._buffer.read(n)
+
+    def readable(self) -> bool:
+        return self._buffer.readable()
+
+    def readline(self, limit: int = -1) -> AnyStr:
+        return self._buffer.readline(limit)
+
+    def readlines(self, hint: int = -1) -> List[AnyStr]:
+        return self._buffer.readlines(hint)
+
+    # stream position operations
+
+    def seek(self, offset: int, whence: int = 0) -> int:
+        return self._buffer.seek(offset, whence)
+
+    def seekable(self) -> bool:
+        return self._buffer.seekable()
+
+    def tell(self) -> int:
+        return self._buffer.tell()
+
+    # write methods
+
+    def writable(self) -> bool:
+        self._buffer.writable()
+
+    def write(self, s: AnyStr) -> int:
+        self._buffer.write(s)
+
+    def writelines(self, lines: List[AnyStr]) -> None:
+        self._buffer.writelines(lines)
+
+    def flush(self) -> None:
+        self._buffer.flush()
+
+
+class StreamedResource(Buffer):
+    """"Implements Iterable and context manager"""
+
+    def __init__(self, identifier: str, buffer: io.IOBase, chunk_size: int = 1024):
+        super().__init__(buffer, chunk_size)
+        self._identifier = identifier
+
+    @property
+    def identifier(self) -> str:
+        return self._identifier
+
+    # def _load_to_memory(self, file_like) -> BinaryIO:
+    #     bytesIO_buffer = io.BytesIO(file_like.read())
+    #     file_like.close()
+    #     return bytesIO_buffer
+
+
+class StreamedTextResource(StreamedResource):
+    def __init__(self, identifier: str, buffer: io.IOBase, chunk_size: int = 1024, encoding: str = "utf-8"):
+        text_buffer = io.TextIOWrapper(buffer, encoding=encoding)
+        super().__init__(identifier, text_buffer,  chunk_size)
+
+    @staticmethod
+    def from_streamed_resouce(resource: StreamedResource, encoding: str = "utf-8") -> "StreamedTextResource":
+        return StreamedTextResource(resource.identifier, resource, resource.chunk_size, encoding)

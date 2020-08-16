@@ -1,12 +1,12 @@
 import gzip
-from data_hub.io.resources import StreamedResource
+from data_hub.io.resources import StreamedResource, ResourceFactory
 
 
 class PreprocessingHelpers:
     def get_gzip_stream(resource: StreamedResource):
         # NOTE: In contrast to tar or zip, a gzip file can only compress a single file
-        buffer = gzip.GzipFile(fileobj=resource.buffer)
-        new_resource = resource.replace_buffer(buffer, in_place=False)
+        buffer = gzip.GzipFile(fileobj=resource)
+        new_resource = ResourceFactory.get_resource(resource.identifier, buffer)
         return new_resource
 
     # def extract_tar(archive_path: str):
