@@ -9,7 +9,7 @@ class SplitterFactory:
 
     @staticmethod
     def get_random_splitter(ratios: List[float]):
-        pass
+        return Splitter(splitter_impl=RandomSplitterImpl(ratios))
 
 
 class SplitterIF(ABC):
