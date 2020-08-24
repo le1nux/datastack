@@ -4,18 +4,6 @@ from typing import List
 from data_hub.dataset.splitter import RandomSplitterImpl, Splitter
 
 
-class MockedDatasetIterator(DatasetIteratorIF):
-    def __init__(self):
-        self.data = list(range(1000))
-
-    def __len__(self):
-        return len(self.data)
-
-    def __getitem__(self, index):
-
-        return self.data[index]
-
-
 class TestSplitter:
     @pytest.fixture
     def ratios(self) -> List[int]:
@@ -23,7 +11,9 @@ class TestSplitter:
 
     @pytest.fixture
     def dataset_iterator(self) -> DatasetIteratorIF:
-        return MockedDatasetIterator()
+        return DatasetIteratorIF(dataset_sequences=[list(range(10)), list(range(10))],
+                                 dataset_name="N",
+                                 dataset_tag="t")
 
     def test_random_splitter(self, ratios: List[int], dataset_iterator: DatasetIteratorIF):
         splitter_impl = RandomSplitterImpl(ratios=ratios)
