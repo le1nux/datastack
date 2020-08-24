@@ -33,7 +33,7 @@ class SplittedDatasetIteratorIF:
         self._dataset_tag = dataset_tag
 
     def __len__(self):
-        return len(self.indices)
+        return len(self._indices)
 
     def __getitem__(self, index: int):
         original_dataset_index = self._indices[index]
