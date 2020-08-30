@@ -1,9 +1,9 @@
 import torch
 from data_hub.io.resources import StreamedResource
-from data_hub.dataset.iterator import DatasetIteratorIF
+from data_hub.dataset.iterator import DatasetIterator
 
 
-class MNISTIterator(DatasetIteratorIF):
+class MNISTIterator(DatasetIterator):
     """ MNIST dataset iterator (http://yann.lecun.com/exdb/mnist/)
     """
 
