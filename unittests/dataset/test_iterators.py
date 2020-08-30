@@ -39,7 +39,7 @@ class TestLabelMapper:
     def dataset_iterator(self, samples) -> DatasetIteratorIF:
         return [sample for sample in samples]
 
-    def test_label_mapper(self, dataset_iterator: DatasetIteratorIF, label_mapper: LabelMapper, target_position: int, samples: List[Tuple[Any]]):
+    def test_post_proceessed_dataset_iterator(self, dataset_iterator: DatasetIteratorIF, label_mapper: LabelMapper, target_position: int, samples: List[Tuple[Any]]):
         iterator = PostProcessedDatasetIterator(dataset_iterator, label_mapper)
         targets = [0, 0, 0, 1, 1]
         assert all([sample[target_position] == targets[i] for i, sample in enumerate(iterator)])
