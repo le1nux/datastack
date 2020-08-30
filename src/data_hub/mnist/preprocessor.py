@@ -6,6 +6,7 @@ from data_hub.dataset.preprocesor import PreprocessingHelpers
 from data_hub.io.resources import ResourceFactory, StreamedResource
 import io
 from data_hub.io.storage_connectors import StorageConnector
+from torchvision import transforms
 
 
 class MNISTPreprocessor:
@@ -35,6 +36,7 @@ class MNISTPreprocessor:
         with self.storage_connector.get_resource(raw_identifier) as raw_resource:
             with PreprocessingHelpers.get_gzip_stream(resource=raw_resource) as unzipped_resource:
                 torch_tensor = MNISTPreprocessor._read_image_file(unzipped_resource)
+        torch_tensor = transforms.Normalize((0.1307,), (0.3081,))(torch_tensor)
         resource = self._torch_tensor_to_streamed_resource(prep_identifier, torch_tensor)
         return resource
 

@@ -8,7 +8,6 @@ from data_hub.dataset.factory import DatasetFactory
 from data_hub.dataset.iterator import DatasetIteratorIF
 from data_hub.mnist.iterator import MNISTIterator
 from data_hub.exception import ResourceNotFoundError
-from matplotlib import pyplot as plt
 
 
 class MNISTFactory(DatasetFactory):
@@ -85,6 +84,8 @@ class MNISTFactory(DatasetFactory):
 
 if __name__ == "__main__":
     import data_hub
+    from matplotlib import pyplot as plt
+
     data_hub_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(data_hub.__file__))))
     example_file_storage_path = os.path.join(data_hub_root, "example_file_storage")
     storage_connector = FileStorageConnector(root_path=example_file_storage_path)
