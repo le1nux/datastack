@@ -69,7 +69,7 @@ class MNISTFactory(DatasetFactory):
         target_identifier = self._get_resource_id(data_type="preprocessed", split=split, element="targets.pt")
         sample_resource = self.storage_connector.get_resource(identifier=sample_identifier)
         target_resource = self.storage_connector.get_resource(identifier=target_identifier)
-        return MNISTIterator(sample_resource, target_resource)
+        return MNISTIterator(sample_resource, target_resource, split)
 
     def get_dataset_iterator(self, split: str = None) -> DatasetIteratorIF:
         splits = self.resource_definitions.keys()
