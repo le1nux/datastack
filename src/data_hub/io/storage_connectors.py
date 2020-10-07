@@ -31,7 +31,7 @@ class StorageConnector(ABC):
 
 class FileStorageConnector(StorageConnector):
     def __init__(self, root_path: str):
-        self._root_path = root_path
+        self._root_path = os.path.abspath(root_path)
 
     @property
     def root_path(self):

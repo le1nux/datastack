@@ -5,7 +5,7 @@ from abc import ABC, abstractmethod
 class PostProcessorIf(ABC):
 
     @abstractmethod
-    def postprocess(self, *tuples: Tuple[Any]) -> Tuple[Any]:
+    def postprocess(self, sample: Tuple[Any]) -> Tuple[Any]:
         raise NotImplementedError
 
 
@@ -19,11 +19,11 @@ class LabelMapper(PostProcessorIf):
         def __contains__(self, label: Any):
             return label in self.previous_labels
 
-    def __init__(self, mappings: List[Dict], target_position: int = 2):
+    def __init__(self, mappings: List[Dict], target_position: int = 1):
         self.target_position = target_position
         self.mappings: List[LabelMapper.Mapping] = [LabelMapper.Mapping(**mapping) for mapping in mappings]
 
-    def postprocess(self, sample: Dict[str, Any]) -> Dict[str, Any]:
+    def postprocess(self, sample: Tuple[Any]) -> Tuple[Any]:
         for mapping in self.mappings:
             if sample[self.target_position] in mapping:
                 # have to convert to list as tuples are immutable
