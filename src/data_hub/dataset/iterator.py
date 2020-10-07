@@ -46,7 +46,7 @@ class DatasetIterator(DatasetIteratorIF):
         return self._dataset_tag
 
 
-class SplittedDatasetIterator(DatasetIteratorIF):
+class DatasetIteratorView(DatasetIteratorIF):
     """Provides a view on a `DatasetIterator` for accessing elements of a given split only."""
 
     def __init__(self, dataset_iterator: DatasetIterator, indices: List[int], dataset_tag: str = None):
@@ -77,7 +77,7 @@ class PostProcessedDatasetIterator(DatasetIteratorIF):
         self._post_processor = post_processor
 
     def __len__(self):
-        return len(self.dataset_iterator)
+        return len(self._dataset_iterator)
 
     def __getitem__(self, index: int):
         return self._post_processor.postprocess(self._dataset_iterator[index])
