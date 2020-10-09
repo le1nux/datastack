@@ -1,6 +1,5 @@
 from typing import Sequence, List
 from abc import ABC, abstractmethod
-from data_hub.dataset.postprocessors.postprocessor import PostProcessorIf
 
 
 class DatasetIteratorIF(ABC):
@@ -68,24 +67,3 @@ class DatasetIteratorView(DatasetIteratorIF):
     @property
     def dataset_tag(self) -> str:
         return self._dataset_tag
-
-
-class PostProcessedDatasetIterator(DatasetIteratorIF):
-
-    def __init__(self, dataset_iterator: DatasetIterator, post_processor: PostProcessorIf, dataset_tag: str = None):
-        self._dataset_iterator = dataset_iterator
-        self._post_processor = post_processor
-
-    def __len__(self):
-        return len(self._dataset_iterator)
-
-    def __getitem__(self, index: int):
-        return self._post_processor.postprocess(self._dataset_iterator[index])
-
-    @property
-    def dataset_name(self) -> str:
-        return self._dataset_iterator.dataset_name
-
-    @property
-    def dataset_tag(self) -> str:
-        return self._dataset_iterator.dataset_tag
