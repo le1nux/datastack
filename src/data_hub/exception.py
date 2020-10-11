@@ -30,3 +30,4 @@ class ResourceNotFoundError(Exception):
 
 class MalformedIdentifierError(Exception):
     """Thrown when an identifier string is malformed."""
+

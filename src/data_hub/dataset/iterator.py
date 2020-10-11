@@ -1,5 +1,6 @@
 from typing import Sequence, List
 from abc import ABC, abstractmethod
+from data_hub.exception import DatasetOutOfBoundsError
 
 
 class DatasetIteratorIF(ABC):
@@ -63,6 +64,34 @@ class DatasetIteratorView(DatasetIteratorIF):
     @property
     def dataset_name(self) -> str:
         return self._dataset_iterator.dataset_name
+
+    @property
+    def dataset_tag(self) -> str:
+        return self._dataset_tag
+
+
+class CombinedDatasetIterator(DatasetIteratorIF):
+
+    def __init__(self, iterators: List[DatasetIterator], dataset_name: str = None, dataset_tag: str = None):
+        self._dataset_name = dataset_name
+        self._iterators = iterators
+        self._dataset_tag = dataset_tag
+
+    def __len__(self):
+        return sum([len(iterator) for iterator in self._iterators])
+
+    def __getitem__(self, index: int):
+        index_copy = index
+        iterator_lenghts = [len(iterator) for iterator in self._iterators]
+        for iterator_index, length in enumerate(iterator_lenghts):
+            if index_copy - length < 0:
+                return self._iterators[iterator_index][index_copy]
+            index_copy -= length
+        raise IndexError
+
+    @property
+    def dataset_name(self) -> str:
+        return self._dataset_name
 
     @property
     def dataset_tag(self) -> str:
