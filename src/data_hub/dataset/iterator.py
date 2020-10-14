@@ -1,6 +1,5 @@
 from typing import Sequence, List
 from abc import ABC, abstractmethod
-from data_hub.exception import DatasetOutOfBoundsError
 
 
 class DatasetIteratorIF(ABC):
@@ -91,7 +90,7 @@ class CombinedDatasetIterator(DatasetIteratorIF):
 
     @property
     def dataset_name(self) -> str:
-        return self._dataset_name
+        return self._dataset_name if self._dataset_name is not None else self.iterators[0].dataset_name
 
     @property
     def dataset_tag(self) -> str:
