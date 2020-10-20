@@ -17,6 +17,11 @@ class RetrieverFactory:
         retriever_impl = HTTPRetrieverImpl(storage_connector)
         return Retriever(retriever_impl)
 
+    @classmethod
+    def get_file_retriever(cls, storage_connector: StorageConnector) -> "Retriever":
+        retriever_impl = FileRetrieverImpl(storage_connector)
+        return Retriever(retriever_impl)
+
 
 class Retriever:
 
@@ -52,7 +57,7 @@ class RetrieverImplIF(ABC):
         self.storage_connector = storage_connector
 
     @abstractmethod
-    def retrieve(retrieval_jobs: List[RetrievalJob]):
+    def retrieve(self, retrieval_jobs: List[RetrievalJob]):
         raise NotImplementedError
 
 
@@ -92,6 +97,17 @@ class HTTPRetrieverImpl(RetrieverImplIF):
             # store datset files
             for retrieval_job, tmp_resource_path in zip(retrieval_jobs, tmp_resource_paths):
                 with open(tmp_resource_path, "rb") as fd:
-                    resource = ResourceFactory.get_resource(
-                        identifier=retrieval_job.identifier, file_like_object=fd, in_memory=False)
+                    resource = ResourceFactory.get_resource(identifier=retrieval_job.identifier, file_like_object=fd)
                     self.storage_connector.set_resource(identifier=retrieval_job.identifier, resource=resource)
+
+
+class FileRetrieverImpl(RetrieverImplIF):
+
+    def __init__(self, storage_connector: StorageConnector):
+        super().__init__(storage_connector)
+
+    def retrieve(self, retrieval_jobs: List[RetrievalJob]):
+        for retrieval_job in retrieval_jobs:
+            with open(retrieval_job.source, "rb") as fd:
+                resource = ResourceFactory.get_resource(identifier=retrieval_job.identifier, file_like_object=fd)
+                self.storage_connector.set_resource(identifier=retrieval_job.identifier, resource=resource)

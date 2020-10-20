@@ -1,11 +1,11 @@
 from abc import ABC, abstractmethod
 import io
-from typing import BinaryIO, AnyStr, List
+from typing import AnyStr, List
 
 
 class ResourceFactory:
     @staticmethod
-    def get_resource(identifier: str, file_like_object, in_memory: bool = True, chunk_size: int = 1024) -> "StreamedResource":
+    def get_resource(identifier: str, file_like_object: io.IOBase, chunk_size: int = 1024) -> "StreamedResource":
         return StreamedResource(identifier, file_like_object, chunk_size)
 
 

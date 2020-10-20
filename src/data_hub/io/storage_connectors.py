@@ -42,8 +42,7 @@ class FileStorageConnector(StorageConnector):
             raise ResourceNotFoundError(f"Resource {identifier} not found.")
         full_path = self._get_full_path(identifier)
         fd = open(full_path, "rb")
-        streamed_resource = ResourceFactory.get_resource(
-            identifier=identifier, file_like_object=fd, in_memory=in_memory)
+        streamed_resource = ResourceFactory.get_resource(identifier=identifier, file_like_object=fd)
         return streamed_resource
 
     def set_resource(self, identifier: str, resource: "StreamedResource"):

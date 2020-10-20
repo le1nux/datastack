@@ -3,6 +3,8 @@ from data_hub.io.storage_connectors import StorageConnectorFactory, StorageConne
 from data_hub.io.resources import StreamedResource
 import pytest
 import hashlib
+import tempfile
+import os
 
 
 class TestBaseRetriever:
@@ -35,8 +37,24 @@ class TestRetriever(TestBaseRetriever):
                             md5_sum="ec29112dd5afa0611ce80d1b7f02629c")
 
     @pytest.fixture
+    def file_retrieval_job(self) -> RetrievalJob:
+        fd, path = tempfile.mkstemp()
+        try:
+            with os.fdopen(fd, 'w') as tmp:
+                tmp.write('stuff...')
+            yield RetrievalJob(identifier="my_resouce",
+                               source=path,
+                               md5_sum="71ac8605d7b9fdcbc0266731178637b1")
+        finally:
+            os.remove(path)
+
+    @pytest.fixture
     def http_retriever(self, storage_connector: StorageConnector):
         return RetrieverFactory.get_http_retriever(storage_connector)
+
+    @pytest.fixture
+    def file_retriever(self, storage_connector: StorageConnector):
+        return RetrieverFactory.get_file_retriever(storage_connector)
 
     @pytest.fixture
     def http_retriever_impl(self, storage_connector: StorageConnector):
@@ -55,3 +73,9 @@ class TestRetriever(TestBaseRetriever):
         with open(file_path, "rb") as fd:
             md5_sum = TestBaseRetriever.get_md5(fd)
         return md5_sum == http_retrieval_job.md5_sum
+
+    def test_file_retriever_retrieve(self, file_retriever: Retriever, file_retrieval_job: RetrievalJob):
+        file_retriever.retrieve([file_retrieval_job])
+        storage_connector = file_retriever.retriever_impl.storage_connector
+        resource = storage_connector.get_resource(file_retrieval_job.identifier)
+        assert TestBaseRetriever.get_md5(resource) == file_retrieval_job.md5_sum
