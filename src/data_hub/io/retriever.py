@@ -8,6 +8,7 @@ import tempfile
 import os
 from data_hub.util.helper import calculate_md5
 from data_hub.io.resources import ResourceFactory
+from data_hub.io.resource_definition import ResourceDefinition
 
 
 class RetrieverFactory:
@@ -28,27 +29,8 @@ class Retriever:
     def __init__(self, retriever_impl: "RetrieverImplIF"):
         self.retriever_impl = retriever_impl
 
-    def retrieve(self, retrieval_jobs: List["RetrievalJob"]):
-        self.retriever_impl.retrieve(retrieval_jobs)
-
-
-class RetrievalJob:
-    def __init__(self, identifier: str, source: str, md5_sum: str):
-        self._identifier = identifier
-        self._source = source
-        self._md5_sum = md5_sum
-
-    @property
-    def identifier(self) -> str:
-        return self._identifier
-
-    @property
-    def source(self) -> str:
-        return self._source
-
-    @property
-    def md5_sum(self) -> str:
-        return self._md5_sum
+    def retrieve(self, retrieval_jobs: List[ResourceDefinition]) -> List[str]:
+        return self.retriever_impl.retrieve(retrieval_jobs)
 
 
 class RetrieverImplIF(ABC):
@@ -57,7 +39,7 @@ class RetrieverImplIF(ABC):
         self.storage_connector = storage_connector
 
     @abstractmethod
-    def retrieve(self, retrieval_jobs: List[RetrievalJob]):
+    def retrieve(self, retrieval_jobs: List[ResourceDefinition]) -> List[str]:
         raise NotImplementedError
 
 
@@ -84,12 +66,13 @@ class HTTPRetrieverImpl(RetrieverImplIF):
             raise DatasetFileCorruptError
         return file_path
 
-    def _download(self, retrieval_jobs: List[RetrievalJob], dest_folder: str) -> List[str]:
+    def _download(self, retrieval_jobs: List[ResourceDefinition], dest_folder: str) -> List[str]:
         file_paths = [self._download_file(
             url=retrieval_job.source, dest_folder=dest_folder, md5=retrieval_job.md5_sum) for retrieval_job in retrieval_jobs]
         return file_paths
 
-    def retrieve(self, retrieval_jobs: List[RetrievalJob]):
+    def retrieve(self, retrieval_jobs: List[ResourceDefinition]):
+        resource_identifiers = []
         with tempfile.TemporaryDirectory() as tmp_dest_folder:
             logger.debug(f'Created temporary directory {tmp_dest_folder} for downloading resources...')
             # download dataset files
@@ -99,6 +82,8 @@ class HTTPRetrieverImpl(RetrieverImplIF):
                 with open(tmp_resource_path, "rb") as fd:
                     resource = ResourceFactory.get_resource(identifier=retrieval_job.identifier, file_like_object=fd)
                     self.storage_connector.set_resource(identifier=retrieval_job.identifier, resource=resource)
+                    resource_identifiers.append(retrieval_job.identifier)
+        return resource_identifiers
 
 
 class FileRetrieverImpl(RetrieverImplIF):
@@ -106,8 +91,15 @@ class FileRetrieverImpl(RetrieverImplIF):
     def __init__(self, storage_connector: StorageConnector):
         super().__init__(storage_connector)
 
-    def retrieve(self, retrieval_jobs: List[RetrievalJob]):
+    def retrieve(self, retrieval_jobs: List[ResourceDefinition]):
+        resource_identifiers = []
         for retrieval_job in retrieval_jobs:
             with open(retrieval_job.source, "rb") as fd:
                 resource = ResourceFactory.get_resource(identifier=retrieval_job.identifier, file_like_object=fd)
+                calculated_md5_sum = calculate_md5(resource)
+                if calculated_md5_sum != retrieval_job.md5_sum:
+                    logger.fatal(f"Given MD5 hash did not match with the md5 has of file {retrieval_job.source}")
+                    raise DatasetFileCorruptError
                 self.storage_connector.set_resource(identifier=retrieval_job.identifier, resource=resource)
+                resource_identifiers.append(retrieval_job.identifier)
+        return resource_identifiers

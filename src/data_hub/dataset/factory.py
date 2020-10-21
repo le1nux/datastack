@@ -6,12 +6,6 @@ from dataclasses import dataclass
 
 class DatasetFactory(ABC):
 
-    @dataclass
-    class ResourceDefinition:
-        identifier: str
-        source: str
-        md5_sum: str
-
     def __init__(self, storage_connector: StorageConnector):
         self.storage_connector = storage_connector
 

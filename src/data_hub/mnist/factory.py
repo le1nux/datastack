@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
 
 import os
-from data_hub.io.retriever import RetrieverFactory, RetrievalJob
+from data_hub.io.retriever import RetrieverFactory
 from data_hub.io.storage_connectors import StorageConnector, FileStorageConnector
 from data_hub.mnist.preprocessor import MNISTPreprocessor
 from data_hub.dataset.factory import DatasetFactory
 from data_hub.dataset.iterator import DatasetIteratorIF
 from data_hub.mnist.iterator import MNISTIterator
 from data_hub.exception import ResourceNotFoundError
+from data_hub.io.resource_definition import ResourceDefinition
 
 
 class MNISTFactory(DatasetFactory):
@@ -17,21 +18,21 @@ class MNISTFactory(DatasetFactory):
         self.preprocessed_path = "mnist/preprocessed/"
         self.resource_definitions = {
             "train": [
-                MNISTFactory.ResourceDefinition(identifier=os.path.join(self.raw_path, "samples_train.gz"),
-                                                source='http://yann.lecun.com/exdb/mnist/train-images-idx3-ubyte.gz',
-                                                md5_sum="f68b3c2dcbeaaa9fbdd348bbdeb94873"),
-                MNISTFactory.ResourceDefinition(identifier=os.path.join(self.raw_path, "labels_train.gz"),
-                                                source='http://yann.lecun.com/exdb/mnist/train-labels-idx1-ubyte.gz',
-                                                md5_sum="d53e105ee54ea40749a09fcbcd1e9432")
+                ResourceDefinition(identifier=os.path.join(self.raw_path, "samples_train.gz"),
+                                   source='http://yann.lecun.com/exdb/mnist/train-images-idx3-ubyte.gz',
+                                   md5_sum="f68b3c2dcbeaaa9fbdd348bbdeb94873"),
+                ResourceDefinition(identifier=os.path.join(self.raw_path, "labels_train.gz"),
+                                   source='http://yann.lecun.com/exdb/mnist/train-labels-idx1-ubyte.gz',
+                                   md5_sum="d53e105ee54ea40749a09fcbcd1e9432")
 
             ],
             "test": [
-                MNISTFactory.ResourceDefinition(identifier=os.path.join(self.raw_path, "samples_test.gz"),
-                                                source='http://yann.lecun.com/exdb/mnist/t10k-images-idx3-ubyte.gz',
-                                                md5_sum="9fb629c4189551a2d022fa330f9573f3"),
-                MNISTFactory.ResourceDefinition(identifier=os.path.join(self.raw_path, "targets.gz"),
-                                                source='http://yann.lecun.com/exdb/mnist/t10k-labels-idx1-ubyte.gz',
-                                                md5_sum="ec29112dd5afa0611ce80d1b7f02629c")
+                ResourceDefinition(identifier=os.path.join(self.raw_path, "samples_test.gz"),
+                                   source='http://yann.lecun.com/exdb/mnist/t10k-images-idx3-ubyte.gz',
+                                   md5_sum="9fb629c4189551a2d022fa330f9573f3"),
+                ResourceDefinition(identifier=os.path.join(self.raw_path, "targets.gz"),
+                                   source='http://yann.lecun.com/exdb/mnist/t10k-labels-idx1-ubyte.gz',
+                                   md5_sum="ec29112dd5afa0611ce80d1b7f02629c")
             ]
         }
 
@@ -46,9 +47,9 @@ class MNISTFactory(DatasetFactory):
         return os.path.join("mnist", data_type, split, element)
 
     def _retrieve_raw(self):
-        retrieval_jobs = [RetrievalJob(identifier=resource_definition.identifier,
-                                       source=resource_definition.source,
-                                       md5_sum=resource_definition.md5_sum)
+        retrieval_jobs = [ResourceDefinition(identifier=resource_definition.identifier,
+                                             source=resource_definition.source,
+                                             md5_sum=resource_definition.md5_sum)
                           for split, definitions_list in self.resource_definitions.items()
                           for resource_definition in definitions_list]
         retriever = RetrieverFactory.get_http_retriever(self.storage_connector)

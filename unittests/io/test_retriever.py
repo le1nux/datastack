@@ -1,10 +1,11 @@
-from data_hub.io.retriever import RetrieverFactory, HTTPRetrieverImpl, Retriever, RetrievalJob
+from data_hub.io.retriever import RetrieverFactory, HTTPRetrieverImpl, Retriever
 from data_hub.io.storage_connectors import StorageConnectorFactory, StorageConnector
 from data_hub.io.resources import StreamedResource
 import pytest
 import hashlib
 import tempfile
 import os
+from data_hub.io.resource_definition import ResourceDefinition
 
 
 class TestBaseRetriever:
@@ -31,20 +32,20 @@ class TestRetrieverFactory(TestBaseRetriever):
 
 class TestRetriever(TestBaseRetriever):
     @pytest.fixture
-    def http_retrieval_job(self) -> RetrievalJob:
-        return RetrievalJob(identifier="my_resouce",
-                            source="http://yann.lecun.com/exdb/mnist/t10k-labels-idx1-ubyte.gz",
-                            md5_sum="ec29112dd5afa0611ce80d1b7f02629c")
+    def http_retrieval_job(self) -> ResourceDefinition:
+        return ResourceDefinition(identifier="my_resouce",
+                                  source="http://yann.lecun.com/exdb/mnist/t10k-labels-idx1-ubyte.gz",
+                                  md5_sum="ec29112dd5afa0611ce80d1b7f02629c")
 
     @pytest.fixture
-    def file_retrieval_job(self) -> RetrievalJob:
+    def file_retrieval_job(self) -> ResourceDefinition:
         fd, path = tempfile.mkstemp()
         try:
             with os.fdopen(fd, 'w') as tmp:
                 tmp.write('stuff...')
-            yield RetrievalJob(identifier="my_resouce",
-                               source=path,
-                               md5_sum="71ac8605d7b9fdcbc0266731178637b1")
+            yield ResourceDefinition(identifier="my_resouce",
+                                     source=path,
+                                     md5_sum="71ac8605d7b9fdcbc0266731178637b1")
         finally:
             os.remove(path)
 
@@ -60,13 +61,13 @@ class TestRetriever(TestBaseRetriever):
     def http_retriever_impl(self, storage_connector: StorageConnector):
         return HTTPRetrieverImpl(storage_connector)
 
-    def test_http_retriever_retrieve(self, http_retriever: Retriever, http_retrieval_job: RetrievalJob):
+    def test_http_retriever_retrieve(self, http_retriever: Retriever, http_retrieval_job: ResourceDefinition):
         http_retriever.retrieve([http_retrieval_job])
         storage_connector = http_retriever.retriever_impl.storage_connector
         resource = storage_connector.get_resource(http_retrieval_job.identifier)
         assert TestBaseRetriever.get_md5(resource) == http_retrieval_job.md5_sum
 
-    def test_http_retriever_impl_download_file(self, http_retriever_impl: HTTPRetrieverImpl, http_retrieval_job: RetrievalJob, tmp_folder_path: str):
+    def test_http_retriever_impl_download_file(self, http_retriever_impl: HTTPRetrieverImpl, http_retrieval_job: ResourceDefinition, tmp_folder_path: str):
         file_path = http_retriever_impl._download_file(url=http_retrieval_job.source,
                                                        dest_folder=tmp_folder_path,
                                                        md5=http_retrieval_job.md5_sum)
@@ -74,7 +75,7 @@ class TestRetriever(TestBaseRetriever):
             md5_sum = TestBaseRetriever.get_md5(fd)
         return md5_sum == http_retrieval_job.md5_sum
 
-    def test_file_retriever_retrieve(self, file_retriever: Retriever, file_retrieval_job: RetrievalJob):
+    def test_file_retriever_retrieve(self, file_retriever: Retriever, file_retrieval_job: ResourceDefinition):
         file_retriever.retrieve([file_retrieval_job])
         storage_connector = file_retriever.retriever_impl.storage_connector
         resource = storage_connector.get_resource(file_retrieval_job.identifier)
