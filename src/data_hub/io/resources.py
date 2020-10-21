@@ -1,12 +1,21 @@
 from abc import ABC, abstractmethod
 import io
 from typing import AnyStr, List
+from enum import Enum
 
 
 class ResourceFactory:
+
+    class SupportedStreamedResourceTypes(Enum):
+        STREAMED_BINARY_RESOURCE = "STREAMED_BINARY_RESOURCE"
+        STREAMED_TEXT_RESOURCE = "STREAMED_TEXT_RESOURCE"
+
     @staticmethod
-    def get_resource(identifier: str, file_like_object: io.IOBase, chunk_size: int = 1024) -> "StreamedResource":
-        return StreamedResource(identifier, file_like_object, chunk_size)
+    def get_resource(identifier: str, file_like_object: io.IOBase, chunk_size: int = 1024, resource_type: SupportedStreamedResourceTypes = SupportedStreamedResourceTypes.STREAMED_BINARY_RESOURCE) -> "StreamedResource":
+        if resource_type == ResourceFactory.SupportedStreamedResourceTypes.STREAMED_TEXT_RESOURCE:
+            return StreamedTextResource(identifier, file_like_object, chunk_size)
+        else:
+            return StreamedResource(identifier, file_like_object, chunk_size)
 
 
 class IterableIF(ABC):

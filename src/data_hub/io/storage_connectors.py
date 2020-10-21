@@ -6,7 +6,7 @@ from data_hub.util.helper import is_safe_path
 from data_hub.exception import MaliciousFilePathError, ResourceNotFoundError
 import os
 from data_hub.io.resources import ResourceFactory, StreamedResource
-
+from enum import Enum
 
 class StorageConnectorFactory:
 
@@ -16,8 +16,9 @@ class StorageConnectorFactory:
 
 
 class StorageConnector(ABC):
+
     @abstractmethod
-    def get_resource(self, identifier: str, in_memory: bool = False) -> StreamedResource:
+    def get_resource(self, identifier: str, resource_type: ResourceFactory.SupportedStreamedResourceTypes = ResourceFactory.SupportedStreamedResourceTypes.STREAMED_BINARY_RESOURCE) -> StreamedResource:
         raise NotImplementedError
 
     @abstractmethod
@@ -37,12 +38,12 @@ class FileStorageConnector(StorageConnector):
     def root_path(self):
         return self._root_path
 
-    def get_resource(self, identifier: str, in_memory: bool = False):
+    def get_resource(self, identifier: str, resource_type: ResourceFactory.SupportedStreamedResourceTypes = ResourceFactory.SupportedStreamedResourceTypes.STREAMED_BINARY_RESOURCE):
         if not self.has_resource(identifier):
             raise ResourceNotFoundError(f"Resource {identifier} not found.")
         full_path = self._get_full_path(identifier)
         fd = open(full_path, "rb")
-        streamed_resource = ResourceFactory.get_resource(identifier=identifier, file_like_object=fd)
+        streamed_resource = ResourceFactory.get_resource(identifier=identifier, file_like_object=fd, resource_type=resource_type)
         return streamed_resource
 
     def set_resource(self, identifier: str, resource: "StreamedResource"):
