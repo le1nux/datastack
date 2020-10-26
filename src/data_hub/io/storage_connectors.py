@@ -6,7 +6,7 @@ from data_hub.util.helper import is_safe_path
 from data_hub.exception import MaliciousFilePathError, ResourceNotFoundError
 import os
 from data_hub.io.resources import ResourceFactory, StreamedResource
-from enum import Enum
+
 
 class StorageConnectorFactory:
 

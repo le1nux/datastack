@@ -14,7 +14,7 @@ class SplitterFactory:
 class SplitterIF(ABC):
 
     @abstractmethod
-    def split(dataset_iterator: DatasetIteratorIF) -> List[DatasetIteratorIF]:
+    def split(self, dataset_iterator: DatasetIteratorIF) -> List[DatasetIteratorIF]:
         raise NotImplementedError
 
 
