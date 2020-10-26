@@ -6,9 +6,7 @@ setup(
     packages=find_packages(),
     install_requires=["torch",
                       "torchvision",
-                      "h5py",
                       "tqdm",
-                      "flair"
                       ],
     python_requires=">=3.7"
 )
