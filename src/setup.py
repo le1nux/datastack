@@ -7,7 +7,7 @@ setup(
     install_requires=["torch",
                       "torchvision",
                       "tqdm",
-                      "yaml"
+                      "PyYAML"
                       ],
     python_requires=">=3.7"
 )
