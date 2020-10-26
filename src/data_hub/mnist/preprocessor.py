@@ -22,7 +22,7 @@ class MNISTPreprocessor:
     def _torch_tensor_to_streamed_resource(self, identifier: str, tensor: torch.Tensor) -> StreamedResource:
         buffer = io.BytesIO()
         torch.save(tensor, buffer)
-        resource = ResourceFactory.get_resource(identifier=identifier, file_like_object=buffer, in_memory=False)
+        resource = ResourceFactory.get_resource(identifier=identifier, file_like_object=buffer)
         return resource
 
     def _preprocess_target_resource(self, raw_identifier: str, prep_identifier: str) -> StreamedResource:

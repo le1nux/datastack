@@ -136,8 +136,8 @@ class CombinedDatasetIterator(DatasetIteratorIF):
 
     def __getitem__(self, index: int):
         index_copy = index
-        iterator_lenghts = [len(iterator) for iterator in self._iterators]
-        for iterator_index, length in enumerate(iterator_lenghts):
+        iterator_lengths = [len(iterator) for iterator in self._iterators]
+        for iterator_index, length in enumerate(iterator_lengths):
             if index_copy - length < 0:
                 return self._iterators[iterator_index][index_copy]
             index_copy -= length

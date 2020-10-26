@@ -8,5 +8,6 @@ class MNISTIterator(DatasetIterator):
     """
 
     def __init__(self, samples_stream: StreamedResource, targets_stream: StreamedResource = None,  dataset_tag: str = None):
-        dataset_sequences = [torch.load(samples_stream), torch.load(targets_stream)]
+        targets = [int(target) for target in torch.load(targets_stream)]
+        dataset_sequences = [torch.load(samples_stream), targets]
         super().__init__(dataset_name="MNIST", dataset_sequences=dataset_sequences, dataset_tag=dataset_tag)
