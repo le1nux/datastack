@@ -9,5 +9,3 @@ To install the package `cd` into the root directory and run:
 ```bash
 pip install src/
 ```
-
-
