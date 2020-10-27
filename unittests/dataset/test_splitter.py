@@ -1,5 +1,5 @@
 import pytest
-from data_hub.dataset.iterator import DatasetIteratorIF, DatasetIterator
+from data_hub.dataset.iterator import DatasetIteratorIF, SequenceDatasetIterator, DatasetMetaInformation
 from typing import List
 from data_hub.dataset.splitter import RandomSplitterImpl, Splitter
 
@@ -10,10 +10,17 @@ class TestSplitter:
         return [0.3, 0.3, 0.2, 0.1, 0.1]
 
     @pytest.fixture
-    def dataset_iterator(self) -> DatasetIteratorIF:
-        return DatasetIterator(dataset_sequences=[list(range(10)), list(range(10))],
-                               dataset_name="N",
-                               dataset_tag="t")
+    def dataset_meta_information(self) -> DatasetMetaInformation:
+        return DatasetMetaInformation(dataset_name="TEST DATASET",
+                                      dataset_tag="train",
+                                      sample_pos=0,
+                                      target_pos=1,
+                                      tag_pos=2)
+
+    @pytest.fixture
+    def dataset_iterator(self, dataset_meta_information) -> DatasetIteratorIF:
+        return SequenceDatasetIterator(dataset_sequences=[list(range(10)), list(range(10))],
+                                       dataset_meta_information=dataset_meta_information)
 
     def test_random_splitter(self, ratios: List[int], dataset_iterator: DatasetIteratorIF):
         splitter_impl = RandomSplitterImpl(ratios=ratios)
