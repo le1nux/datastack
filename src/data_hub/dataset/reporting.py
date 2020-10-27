@@ -32,10 +32,11 @@ class DatasetIteratorReportGenerator:
 
     def generate_report(iterator: DatasetIteratorIF, report_format: ReportFormat = ReportFormat.DATA_CLASS):
         sub_reports = [DatasetIteratorReportGenerator.generate_report(sub_iterator) for sub_iterator in iterator.underlying_iterators]
-        target_dist = {k: v for k, v in sorted(Counter([row[iterator.target_pos] for row in iterator]).items())}
+        meta_information = iterator.dataset_meta_information
+        target_dist = {k: v for k, v in sorted(Counter([row[meta_information.target_pos] for row in iterator]).items())}
         iteration_speed = DatasetIteratorReportGenerator.measure_iteration_speed(iterator)
-        report = DatasetIteratorReport(iterator.dataset_name, iterator.dataset_tag, len(iterator), iterator.sample_pos, iterator.target_pos,
-                                       iterator.tag_pos, iterator[0][iterator.sample_pos].shape, target_dist, iteration_speed, sub_reports)
+        report = DatasetIteratorReport(meta_information.dataset_name, meta_information.dataset_tag, len(iterator), meta_information.sample_pos, meta_information.target_pos,
+                                       meta_information.tag_pos, iterator[0][meta_information.sample_pos].shape, target_dist, iteration_speed, sub_reports)
         if report_format == DatasetIteratorReportGenerator.ReportFormat.JSON:
             return DatasetIteratorReportGenerator._to_json(report)
         elif report_format == DatasetIteratorReportGenerator.ReportFormat.YAML:
@@ -75,6 +76,7 @@ if __name__ == "__main__":
     import data_hub
     import os
     from data_hub.io.storage_connectors import FileStorageConnector
+    from data_hub.dataset.meta_information import DatasetMetaInformationFactory
 
     data_hub_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(data_hub.__file__))))
     example_file_storage_path = os.path.join(data_hub_root, "example_file_storage")
@@ -87,7 +89,8 @@ if __name__ == "__main__":
     from data_hub.dataset.iterator import CombinedDatasetIterator
     iterator_train = mnist_factory.get_dataset_iterator(split="train")
     iterator_test = mnist_factory.get_dataset_iterator(split="test")
-
-    iterator = CombinedDatasetIterator([iterator_train, iterator_train, iterator_train], "combined", "my_tag")
+    meta_info = DatasetMetaInformationFactory.get_dataset_meta_informmation_from_existing(
+        iterator_test.dataset_meta_information, "combined", "my_tag")
+    iterator = CombinedDatasetIterator([iterator_train, iterator_train, iterator_train], meta_info)
     report = DatasetIteratorReportGenerator.generate_report(iterator)
     print(report)

@@ -2,6 +2,7 @@ from data_hub.dataset.iterator import DatasetIteratorIF, DatasetIteratorView
 from typing import List
 from abc import ABC, abstractmethod
 import random
+from data_hub.dataset.meta_information import DatasetMetaInformation, DatasetMetaInformationFactory
 
 
 class SplitterFactory:
@@ -37,7 +38,8 @@ class RandomSplitterImpl(SplitterIF):
     def split(self, dataset_iterator: DatasetIteratorIF) -> List[DatasetIteratorIF]:
         dataset_length = len(dataset_iterator)
         splits_indices = RandomSplitterImpl._determine_split_indices(dataset_length, self.ratios)
-        return [DatasetIteratorView(dataset_iterator, split_indices, split_name)
+
+        return [DatasetIteratorView(dataset_iterator, split_indices, DatasetMetaInformationFactory.get_dataset_meta_informmation(dataset_iterator.dataset_meta_information, dataset_tag=split_name))
                 for split_indices, split_name in zip(splits_indices, self.split_names)]
 
     @staticmethod

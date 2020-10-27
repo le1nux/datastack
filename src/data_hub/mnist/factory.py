@@ -9,6 +9,7 @@ from data_hub.dataset.iterator import DatasetIteratorIF
 from data_hub.mnist.iterator import MNISTIterator
 from data_hub.exception import ResourceNotFoundError
 from data_hub.io.resource_definition import ResourceDefinition
+from data_hub.dataset.meta_information import DatasetMetaInformationFactory
 
 
 class MNISTFactory(DatasetFactory):
@@ -70,7 +71,8 @@ class MNISTFactory(DatasetFactory):
         target_identifier = self._get_resource_id(data_type="preprocessed", split=split, element="targets.pt")
         sample_resource = self.storage_connector.get_resource(identifier=sample_identifier)
         target_resource = self.storage_connector.get_resource(identifier=target_identifier)
-        return MNISTIterator(sample_resource, target_resource, split)
+        meta_info = DatasetMetaInformationFactory.get_dataset_meta_informmation(dataset_name="MNIST", dataset_tag=split)
+        return MNISTIterator(sample_resource, target_resource, meta_info)
 
     def get_dataset_iterator(self, split: str = None) -> DatasetIteratorIF:
         splits = self.resource_definitions.keys()
