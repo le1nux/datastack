@@ -2,7 +2,7 @@ import pytest
 from data_hub.dataset.iterator import DatasetIteratorIF, SequenceDatasetIterator
 from typing import List
 from data_hub.dataset.splitter import RandomSplitterImpl, Splitter
-from data_hub.dataset.meta_information import DatasetMetaInformationFactory
+from data_hub.dataset.meta_information import DatasetMetaInformation, DatasetMetaInformationFactory
 
 
 class TestSplitter:
