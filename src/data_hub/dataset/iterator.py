@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from typing import List, Sequence
-from data_hub.dataset.meta_information import DatasetMetaInformation, DatasetMetaInformationFactory
+from data_hub.dataset.meta_information import DatasetMetaInformation
 
 
 class DatasetIteratorIF(ABC):

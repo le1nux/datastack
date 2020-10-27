@@ -1,7 +1,8 @@
 import pytest
-from data_hub.dataset.iterator import DatasetIteratorIF, SequenceDatasetIterator, DatasetMetaInformation
+from data_hub.dataset.iterator import DatasetIteratorIF, SequenceDatasetIterator
 from typing import List
 from data_hub.dataset.splitter import RandomSplitterImpl, Splitter
+from data_hub.dataset.meta_information import DatasetMetaInformationFactory
 
 
 class TestSplitter:
@@ -11,11 +12,11 @@ class TestSplitter:
 
     @pytest.fixture
     def dataset_meta_information(self) -> DatasetMetaInformation:
-        return DatasetMetaInformation(dataset_name="TEST DATASET",
-                                      dataset_tag="train",
-                                      sample_pos=0,
-                                      target_pos=1,
-                                      tag_pos=2)
+        return DatasetMetaInformationFactory.get_dataset_meta_informmation(dataset_name="TEST DATASET",
+                                                                           dataset_tag="train",
+                                                                           sample_pos=0,
+                                                                           target_pos=1,
+                                                                           tag_pos=2)
 
     @pytest.fixture
     def dataset_iterator(self, dataset_meta_information) -> DatasetIteratorIF:

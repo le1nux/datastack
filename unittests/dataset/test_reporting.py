@@ -5,7 +5,8 @@ from data_hub.io.storage_connectors import StorageConnector, StorageConnectorFac
 from data_hub.dataset.reporting import DatasetIteratorReportGenerator
 import tempfile
 import shutil
-from data_hub.dataset.iterator import CombinedDatasetIterator, DatasetMetaInformation, DatasetMetaInformationFactory
+from data_hub.dataset.iterator import CombinedDatasetIterator
+from data_hub.dataset.meta_information import DatasetMetaInformationFactory
 
 
 class TestReporting:

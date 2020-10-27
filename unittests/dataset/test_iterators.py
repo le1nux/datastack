@@ -1,6 +1,6 @@
 import pytest
 from typing import List, Any, Tuple
-from data_hub.dataset.iterator import DatasetIteratorIF, SequenceDatasetIterator, DatasetIteratorView, CombinedDatasetIterator, DatasetMetaInformation
+from data_hub.dataset.iterator import DatasetIteratorIF, SequenceDatasetIterator, DatasetIteratorView, CombinedDatasetIterator
 from itertools import chain
 from data_hub.dataset.meta_information import DatasetMetaInformation, DatasetMetaInformationFactory
 
