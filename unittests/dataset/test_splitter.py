@@ -2,7 +2,7 @@ import pytest
 from data_hub.dataset.iterator import DatasetIteratorIF, SequenceDatasetIterator
 from typing import List
 from data_hub.dataset.splitter import RandomSplitterImpl, Splitter
-from data_hub.dataset.meta_information import DatasetMetaInformation, DatasetMetaInformationFactory
+from data_hub.dataset.meta import DatasetMeta, MetaFactory
 
 
 class TestSplitter:
@@ -11,17 +11,16 @@ class TestSplitter:
         return [0.3, 0.3, 0.2, 0.1, 0.1]
 
     @pytest.fixture
-    def dataset_meta_information(self) -> DatasetMetaInformation:
-        return DatasetMetaInformationFactory.get_dataset_meta_informmation(dataset_name="TEST DATASET",
-                                                                           dataset_tag="train",
-                                                                           sample_pos=0,
-                                                                           target_pos=1,
-                                                                           tag_pos=2)
+    def dataset_meta(self) -> DatasetMeta:
+        iterator_meta = MetaFactory.get_iterator_meta(sample_pos=0, target_pos=1, tag_pos=2)
+        return MetaFactory.get_dataset_meta(identifier="identifier_1",
+                                            dataset_name="TEST DATASET",
+                                            dataset_tag="train",
+                                            iterator_meta=iterator_meta)
 
     @pytest.fixture
-    def dataset_iterator(self, dataset_meta_information) -> DatasetIteratorIF:
-        return SequenceDatasetIterator(dataset_sequences=[list(range(10)), list(range(10))],
-                                       dataset_meta_information=dataset_meta_information)
+    def dataset_iterator(self) -> DatasetIteratorIF:
+        return SequenceDatasetIterator(dataset_sequences=[list(range(10)), list(range(10))])
 
     def test_random_splitter(self, ratios: List[int], dataset_iterator: DatasetIteratorIF):
         splitter_impl = RandomSplitterImpl(ratios=ratios)

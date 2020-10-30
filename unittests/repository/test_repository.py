@@ -1,10 +1,10 @@
 import pytest
 from data_hub.repository.repository import DatasetRepository
-from data_hub.dataset.factory import DatasetFactory
+from data_hub.dataset.factory import BaseDatasetFactory
 from data_hub.dataset.iterator import DatasetIteratorIF
 
 
-class MockedDatasetFactory(DatasetFactory):
+class MockedDatasetFactory(BaseDatasetFactory):
     def __init__(self):
         super().__init__(None)
 

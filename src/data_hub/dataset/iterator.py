@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from typing import List, Sequence
-from data_hub.dataset.meta_information import DatasetMetaInformation
+from data_hub.dataset.meta import DatasetMeta
 
 
 class DatasetIteratorIF(ABC):
@@ -18,30 +18,45 @@ class DatasetIteratorIF(ABC):
     def underlying_iterators(self) -> List["DatasetIteratorIF"]:
         raise NotImplementedError
 
+
+class InformedDatasetIteratorIF(DatasetIteratorIF):
+
     @property
-    @abstractmethod
-    def dataset_meta_information(self) -> DatasetMetaInformation:
+    def dataset_meta(self) -> DatasetMeta:
         raise NotImplementedError
 
 
 class DatasetIterator(DatasetIteratorIF):
 
-    def __init__(self, dataset_meta_information: DatasetMetaInformation):
-        self._dataset_meta_information = dataset_meta_information
-
     @property
     def underlying_iterators(self) -> List["DatasetIteratorIF"]:
         return []
 
+
+class InformedDatasetIterator(InformedDatasetIteratorIF):
+
+    def __init__(self, dataset_iterator: DatasetIterator, dataset_meta: DatasetMeta):
+        self._dataset_meta = dataset_meta
+        self._dataset_iterator = dataset_iterator
+
+    def __len__(self):
+        return len(self._dataset_iterator)
+
+    def __getitem__(self, index: int):
+        return self._dataset_iterator[index]
+
     @property
-    def dataset_meta_information(self) -> DatasetMetaInformation:
-        return self._dataset_meta_information
+    def underlying_iterators(self) -> List["DatasetIteratorIF"]:
+        return self._dataset_iterator.underlying_iterators
+
+    @property
+    def dataset_meta(self) -> DatasetMeta:
+        return self._dataset_meta
 
 
 class SequenceDatasetIterator(DatasetIterator):
 
-    def __init__(self, dataset_sequences: List[Sequence], dataset_meta_information: DatasetMetaInformation):
-        super().__init__(dataset_meta_information)
+    def __init__(self, dataset_sequences: List[Sequence]):
         self._dataset_sequences = dataset_sequences
 
     def __len__(self):
@@ -50,12 +65,15 @@ class SequenceDatasetIterator(DatasetIterator):
     def __getitem__(self, index: int):
         return tuple([s[index] for s in self._dataset_sequences])
 
+    @property
+    def underlying_iterators(self) -> List["DatasetIteratorIF"]:
+        return []
+
 
 class DatasetIteratorView(DatasetIterator):
     """Provides a view on a `DatasetIterator` for accessing elements of a given split only."""
 
-    def __init__(self, dataset_iterator: DatasetIterator, indices: List[int], dataset_meta_information: DatasetMetaInformation):
-        super().__init__(dataset_meta_information)
+    def __init__(self, dataset_iterator: DatasetIterator, indices: List[int]):
         self._dataset_iterator = dataset_iterator
         self._indices = indices
 
@@ -73,8 +91,7 @@ class DatasetIteratorView(DatasetIterator):
 
 class CombinedDatasetIterator(DatasetIterator):
 
-    def __init__(self, iterators: List[DatasetIterator], dataset_meta_information: DatasetMetaInformation):
-        super().__init__(dataset_meta_information)
+    def __init__(self, iterators: List[DatasetIterator]):
         self._iterators = iterators
 
     def __len__(self):

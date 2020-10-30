@@ -4,15 +4,16 @@ import os
 from data_hub.io.retriever import RetrieverFactory
 from data_hub.io.storage_connectors import StorageConnector, FileStorageConnector
 from data_hub.mnist.preprocessor import MNISTPreprocessor
-from data_hub.dataset.factory import DatasetFactory
+from data_hub.dataset.factory import BaseDatasetFactory
 from data_hub.dataset.iterator import DatasetIteratorIF
 from data_hub.mnist.iterator import MNISTIterator
 from data_hub.exception import ResourceNotFoundError
 from data_hub.io.resource_definition import ResourceDefinition
-from data_hub.dataset.meta_information import DatasetMetaInformationFactory
+from typing import Tuple
+from data_hub.dataset.meta import IteratorMeta
 
 
-class MNISTFactory(DatasetFactory):
+class MNISTFactory(BaseDatasetFactory):
 
     def __init__(self, storage_connector: StorageConnector):
         self.raw_path = "mnist/raw/"
@@ -71,10 +72,9 @@ class MNISTFactory(DatasetFactory):
         target_identifier = self._get_resource_id(data_type="preprocessed", split=split, element="targets.pt")
         sample_resource = self.storage_connector.get_resource(identifier=sample_identifier)
         target_resource = self.storage_connector.get_resource(identifier=target_identifier)
-        meta_info = DatasetMetaInformationFactory.get_dataset_meta_informmation(dataset_name="MNIST", dataset_tag=split)
-        return MNISTIterator(sample_resource, target_resource, meta_info)
+        return MNISTIterator(sample_resource, target_resource)
 
-    def get_dataset_iterator(self, split: str = None) -> DatasetIteratorIF:
+    def get_dataset_iterator(self, split: str = None) -> Tuple[DatasetIteratorIF, IteratorMeta]:
         splits = self.resource_definitions.keys()
         if split not in splits:
             raise ResourceNotFoundError(f"Split {split} is not defined.")
@@ -82,7 +82,7 @@ class MNISTFactory(DatasetFactory):
             self._retrieve_raw()
             for s in splits:
                 self._prepare_split(s)
-        return self._get_iterator(split)
+        return self._get_iterator(split), IteratorMeta(sample_pos=0, target_pos=1, tag_pos=2)
 
 
 if __name__ == "__main__":
@@ -94,7 +94,7 @@ if __name__ == "__main__":
     storage_connector = FileStorageConnector(root_path=example_file_storage_path)
 
     mnist_factory = MNISTFactory(storage_connector)
-    mnist_iterator = mnist_factory.get_dataset_iterator(split="train")
+    mnist_iterator, _ = mnist_factory.get_dataset_iterator(split="train")
     img, target = mnist_iterator[0]
     plt.imshow(img)
     plt.show()

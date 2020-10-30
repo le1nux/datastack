@@ -7,6 +7,7 @@ from enum import Enum
 import json
 import yaml
 import dataclasses
+from data_hub.dataset.iterator import InformedDatasetIterator
 
 
 @dataclass
@@ -30,13 +31,15 @@ class DatasetIteratorReportGenerator:
         JSON = "json"
         DICT = "dict"
 
-    def generate_report(iterator: DatasetIteratorIF, report_format: ReportFormat = ReportFormat.DATA_CLASS):
+    def generate_report(iterator: InformedDatasetIterator, report_format: ReportFormat = ReportFormat.DATA_CLASS):
         sub_reports = [DatasetIteratorReportGenerator.generate_report(sub_iterator) for sub_iterator in iterator.underlying_iterators]
-        meta_information = iterator.dataset_meta_information
-        target_dist = {k: v for k, v in sorted(Counter([row[meta_information.target_pos] for row in iterator]).items())}
+        meta = iterator.dataset_meta
+        target_dist = {k: v for k, v in sorted(Counter([row[meta.target_pos] for row in iterator]).items())}
         iteration_speed = DatasetIteratorReportGenerator.measure_iteration_speed(iterator)
-        report = DatasetIteratorReport(meta_information.dataset_name, meta_information.dataset_tag, len(iterator), meta_information.sample_pos, meta_information.target_pos,
-                                       meta_information.tag_pos, iterator[0][meta_information.sample_pos].shape, target_dist, iteration_speed, sub_reports)
+        # generate report
+        report = DatasetIteratorReport(meta.dataset_name, meta.dataset_tag, len(iterator), meta.sample_pos, meta.target_pos,
+                                       meta.tag_pos, list(iterator[0][meta.sample_pos].shape), target_dist, iteration_speed, sub_reports)
+        # format report
         if report_format == DatasetIteratorReportGenerator.ReportFormat.JSON:
             return DatasetIteratorReportGenerator._to_json(report)
         elif report_format == DatasetIteratorReportGenerator.ReportFormat.YAML:
@@ -62,13 +65,14 @@ class DatasetIteratorReportGenerator:
         return len(iterator)*iterations / diff  # iterations per second
 
     def _to_json(report: DatasetIteratorReport) -> str:
-        return json.dumps(dataclasses.asdict(report), sort_keys=True, indent=4)
+        return json.dumps(DatasetIteratorReportGenerator._to_dict(report), sort_keys=True, indent=4)
 
     def _to_yaml(report: DatasetIteratorReport) -> str:
-        return yaml.dump(dataclasses.asdict(report), sort_keys=True, indent=4)
+        return yaml.dump(DatasetIteratorReportGenerator._to_dict(report), sort_keys=True, indent=4)
 
     def _to_dict(report: DatasetIteratorReport) -> Dict[str, Any]:
-        return dataclasses.asdict(report)
+        report_dict = dataclasses.asdict(report)
+        return report_dict
 
 
 if __name__ == "__main__":
@@ -76,7 +80,7 @@ if __name__ == "__main__":
     import data_hub
     import os
     from data_hub.io.storage_connectors import FileStorageConnector
-    from data_hub.dataset.meta_information import DatasetMetaInformationFactory
+    from data_hub.dataset.metarmation import MetaFactory
 
     data_hub_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(data_hub.__file__))))
     example_file_storage_path = os.path.join(data_hub_root, "example_file_storage")
@@ -89,8 +93,8 @@ if __name__ == "__main__":
     from data_hub.dataset.iterator import CombinedDatasetIterator
     iterator_train = mnist_factory.get_dataset_iterator(split="train")
     iterator_test = mnist_factory.get_dataset_iterator(split="test")
-    meta_info = DatasetMetaInformationFactory.get_dataset_meta_informmation_from_existing(
-        iterator_test.dataset_meta_information, "combined", "my_tag")
-    iterator = CombinedDatasetIterator([iterator_train, iterator_train, iterator_train], meta_info)
+    meta = MetaFactory.get_dataset_meta_from_existing(
+        iterator_test.dataset_meta, "combined", "my_tag")
+    iterator = CombinedDatasetIterator([iterator_train, iterator_train, iterator_train], meta)
     report = DatasetIteratorReportGenerator.generate_report(iterator)
     print(report)
