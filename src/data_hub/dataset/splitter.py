@@ -2,7 +2,6 @@ from data_hub.dataset.iterator import DatasetIteratorIF, DatasetIteratorView
 from typing import List
 from abc import ABC, abstractmethod
 import random
-from data_hub.dataset.meta import MetaFactory
 
 
 class SplitterFactory:

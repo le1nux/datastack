@@ -15,8 +15,8 @@ class MockedDatasetFactory(BaseDatasetFactory):
 class TestRepository:
     @pytest.fixture
     def dataset_factory(self) -> MockedDatasetFactory:
-        mnist_factory = MockedDatasetFactory()
-        return mnist_factory
+        factory = MockedDatasetFactory()
+        return factory
 
     @pytest.fixture
     def repository(self) -> DatasetRepository:

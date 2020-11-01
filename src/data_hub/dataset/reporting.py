@@ -12,6 +12,7 @@ from data_hub.dataset.iterator import InformedDatasetIterator
 
 @dataclass
 class DatasetIteratorReport:
+    identifier: str
     name: str
     tag: str
     length: int
@@ -37,8 +38,9 @@ class DatasetIteratorReportGenerator:
         target_dist = {k: v for k, v in sorted(Counter([row[meta.target_pos] for row in iterator]).items())}
         iteration_speed = DatasetIteratorReportGenerator.measure_iteration_speed(iterator)
         # generate report
-        report = DatasetIteratorReport(meta.dataset_name, meta.dataset_tag, len(iterator), meta.sample_pos, meta.target_pos,
-                                       meta.tag_pos, list(iterator[0][meta.sample_pos].shape), target_dist, iteration_speed, sub_reports)
+        report = DatasetIteratorReport(meta.identifier, meta.dataset_name, meta.dataset_tag, len(iterator), meta.sample_pos,
+                                       meta.target_pos, meta.tag_pos, list(iterator[0][meta.sample_pos].shape), target_dist,
+                                       iteration_speed, sub_reports)
         # format report
         if report_format == DatasetIteratorReportGenerator.ReportFormat.JSON:
             return DatasetIteratorReportGenerator._to_json(report)
