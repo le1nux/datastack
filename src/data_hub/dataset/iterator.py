@@ -81,6 +81,8 @@ class DatasetIteratorView(DatasetIterator):
         return len(self._indices)
 
     def __getitem__(self, index: int):
+        if index >= len(self._indices):
+            raise StopIteration
         original_dataset_index = self._indices[index]
         return self._dataset_iterator[original_dataset_index]
 
