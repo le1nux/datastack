@@ -27,7 +27,7 @@ jobs:
             . venv/bin/activate
             pip install pytest-cov            
             pip install -e src/
-#           pip install codecov
+            pip install codecov
       - save_cache:
           paths:
             - ./venv
