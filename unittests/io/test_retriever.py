@@ -1,11 +1,11 @@
-from data_hub.io.retriever import RetrieverFactory, HTTPRetrieverImpl, Retriever
-from data_hub.io.storage_connectors import StorageConnectorFactory, StorageConnector
-from data_hub.io.resources import StreamedResource
+from data_stack.io.retriever import RetrieverFactory, HTTPRetrieverImpl, Retriever
+from data_stack.io.storage_connectors import StorageConnectorFactory, StorageConnector
+from data_stack.io.resources import StreamedResource
 import pytest
 import hashlib
 import tempfile
 import os
-from data_hub.io.resource_definition import ResourceDefinition
+from data_stack.io.resource_definition import ResourceDefinition
 
 
 class TestBaseRetriever:

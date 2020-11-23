@@ -1,8 +1,8 @@
 from typing import Dict, Tuple
-from data_hub.dataset.factory import BaseDatasetFactory
-from data_hub.dataset.iterator import DatasetIteratorIF
-from data_hub.exception import DatasetNotFoundError
-from data_hub.dataset.meta import IteratorMeta
+from data_stack.dataset.factory import BaseDatasetFactory
+from data_stack.dataset.iterator import DatasetIteratorIF
+from data_stack.exception import DatasetNotFoundError
+from data_stack.dataset.meta import IteratorMeta
 
 
 class DatasetRepository:

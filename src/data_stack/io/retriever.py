@@ -1,14 +1,14 @@
 from abc import ABC, abstractmethod
 import torchvision
-from data_hub.util.logger import logger
+from data_stack.util.logger import logger
 from typing import List
-from data_hub.io.storage_connectors import StorageConnector
-from data_hub.exception import DatasetFileCorruptError
+from data_stack.io.storage_connectors import StorageConnector
+from data_stack.exception import DatasetFileCorruptError
 import tempfile
 import os
-from data_hub.util.helper import calculate_md5
-from data_hub.io.resources import ResourceFactory
-from data_hub.io.resource_definition import ResourceDefinition
+from data_stack.util.helper import calculate_md5
+from data_stack.io.resources import ResourceFactory
+from data_stack.io.resource_definition import ResourceDefinition
 
 
 class RetrieverFactory:

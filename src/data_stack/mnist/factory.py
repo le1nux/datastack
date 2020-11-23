@@ -1,16 +1,16 @@
 #!/usr/bin/env python3
 
 import os
-from data_hub.io.retriever import RetrieverFactory
-from data_hub.io.storage_connectors import StorageConnector, FileStorageConnector
-from data_hub.mnist.preprocessor import MNISTPreprocessor
-from data_hub.dataset.factory import BaseDatasetFactory
-from data_hub.dataset.iterator import DatasetIteratorIF
-from data_hub.mnist.iterator import MNISTIterator
-from data_hub.exception import ResourceNotFoundError
-from data_hub.io.resource_definition import ResourceDefinition
+from data_stack.io.retriever import RetrieverFactory
+from data_stack.io.storage_connectors import StorageConnector, FileStorageConnector
+from data_stack.mnist.preprocessor import MNISTPreprocessor
+from data_stack.dataset.factory import BaseDatasetFactory
+from data_stack.dataset.iterator import DatasetIteratorIF
+from data_stack.mnist.iterator import MNISTIterator
+from data_stack.exception import ResourceNotFoundError
+from data_stack.io.resource_definition import ResourceDefinition
 from typing import Tuple
-from data_hub.dataset.meta import IteratorMeta
+from data_stack.dataset.meta import IteratorMeta
 
 
 class MNISTFactory(BaseDatasetFactory):
@@ -61,13 +61,11 @@ class MNISTFactory(BaseDatasetFactory):
         preprocessor = MNISTPreprocessor(self.storage_connector)
         sample_identifier = self._get_resource_id(data_type="preprocessed", split=split, element="samples.pt")
         target_identifier = self._get_resource_id(data_type="preprocessed", split=split, element="targets.pt")
-        prep_resources = preprocessor.preprocess(*[r.identifier for r in self.resource_definitions[split]],
-                                                 sample_identifier=sample_identifier,
-                                                 target_identifier=target_identifier)
-        for resource in prep_resources:
-            self.storage_connector.set_resource(identifier=resource.identifier, resource=resource)
+        preprocessor.preprocess(*[r.identifier for r in self.resource_definitions[split]],
+                                sample_identifier=sample_identifier,
+                                target_identifier=target_identifier)
 
-    def _get_iterator(self, split: str):
+    def _get_iterator(self, split: str) -> DatasetIteratorIF:
         sample_identifier = self._get_resource_id(data_type="preprocessed", split=split, element="samples.pt")
         target_identifier = self._get_resource_id(data_type="preprocessed", split=split, element="targets.pt")
         sample_resource = self.storage_connector.get_resource(identifier=sample_identifier)
@@ -86,11 +84,11 @@ class MNISTFactory(BaseDatasetFactory):
 
 
 if __name__ == "__main__":
-    import data_hub
+    import data_stack
     from matplotlib import pyplot as plt
 
-    data_hub_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(data_hub.__file__))))
-    example_file_storage_path = os.path.join(data_hub_root, "example_file_storage")
+    data_stack_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(data_stack.__file__))))
+    example_file_storage_path = os.path.join(data_stack_root, "example_file_storage")
     storage_connector = FileStorageConnector(root_path=example_file_storage_path)
 
     mnist_factory = MNISTFactory(storage_connector)

@@ -1,4 +1,4 @@
-from data_hub.dataset.iterator import DatasetIteratorIF
+from data_stack.dataset.iterator import DatasetIteratorIF
 from dataclasses import dataclass
 from typing import List, Union, Dict, Any
 from collections import Counter
@@ -7,7 +7,7 @@ from enum import Enum
 import json
 import yaml
 import dataclasses
-from data_hub.dataset.iterator import InformedDatasetIterator
+from data_stack.dataset.iterator import InformedDatasetIterator
 
 
 @dataclass
@@ -78,21 +78,21 @@ class DatasetIteratorReportGenerator:
 
 
 if __name__ == "__main__":
-    from data_hub.mnist.factory import MNISTFactory
-    import data_hub
+    from data_stack.mnist.factory import MNISTFactory
+    import data_stack
     import os
-    from data_hub.io.storage_connectors import FileStorageConnector
-    from data_hub.dataset.metarmation import MetaFactory
+    from data_stack.io.storage_connectors import FileStorageConnector
+    from data_stack.dataset.metarmation import MetaFactory
 
-    data_hub_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(data_hub.__file__))))
-    example_file_storage_path = os.path.join(data_hub_root, "example_file_storage")
+    data_stack_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(data_stack.__file__))))
+    example_file_storage_path = os.path.join(data_stack_root, "example_file_storage")
     storage_connector = FileStorageConnector(root_path=example_file_storage_path)
     mnist_factory = MNISTFactory(storage_connector)
     iterator = mnist_factory.get_dataset_iterator(split="train")
     report = DatasetIteratorReportGenerator.generate_report(iterator)
     print(report)
 
-    from data_hub.dataset.iterator import CombinedDatasetIterator
+    from data_stack.dataset.iterator import CombinedDatasetIterator
     iterator_train = mnist_factory.get_dataset_iterator(split="train")
     iterator_test = mnist_factory.get_dataset_iterator(split="test")
     meta = MetaFactory.get_dataset_meta_from_existing(

@@ -1,4 +1,4 @@
-from data_hub.io.resources import StreamedResource, StreamedTextResource
+from data_stack.io.resources import StreamedResource, StreamedTextResource
 import os
 import tempfile
 import pytest

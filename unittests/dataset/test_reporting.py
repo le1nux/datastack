@@ -1,13 +1,13 @@
 import pytest
 from typing import List
-from data_hub.mnist.factory import MNISTFactory
-from data_hub.io.storage_connectors import StorageConnector, StorageConnectorFactory
-from data_hub.dataset.reporting import DatasetIteratorReportGenerator
+from data_stack.mnist.factory import MNISTFactory
+from data_stack.io.storage_connectors import StorageConnector, StorageConnectorFactory
+from data_stack.dataset.reporting import DatasetIteratorReportGenerator
 import tempfile
 import shutil
-from data_hub.dataset.iterator import CombinedDatasetIterator, InformedDatasetIterator
-from data_hub.dataset.meta import MetaFactory, IteratorMeta
-from data_hub.dataset.factory import InformedDatasetFactory, HigherOrderDatasetFactory
+from data_stack.dataset.iterator import InformedDatasetIterator
+from data_stack.dataset.meta import MetaFactory
+from data_stack.dataset.factory import InformedDatasetFactory
 
 
 class TestReporting:

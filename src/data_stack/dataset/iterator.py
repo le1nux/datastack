@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from typing import List, Sequence
-from data_hub.dataset.meta import DatasetMeta
+from data_stack.dataset.meta import DatasetMetaIF
 
 
 class DatasetIteratorIF(ABC):
@@ -22,7 +22,7 @@ class DatasetIteratorIF(ABC):
 class InformedDatasetIteratorIF(DatasetIteratorIF):
 
     @property
-    def dataset_meta(self) -> DatasetMeta:
+    def dataset_meta(self) -> DatasetMetaIF:
         raise NotImplementedError
 
 
@@ -35,7 +35,7 @@ class DatasetIterator(DatasetIteratorIF):
 
 class InformedDatasetIterator(InformedDatasetIteratorIF):
 
-    def __init__(self, dataset_iterator: DatasetIterator, dataset_meta: DatasetMeta):
+    def __init__(self, dataset_iterator: DatasetIterator, dataset_meta: DatasetMetaIF):
         self._dataset_meta = dataset_meta
         self._dataset_iterator = dataset_iterator
 
@@ -50,7 +50,7 @@ class InformedDatasetIterator(InformedDatasetIteratorIF):
         return self._dataset_iterator.underlying_iterators
 
     @property
-    def dataset_meta(self) -> DatasetMeta:
+    def dataset_meta(self) -> DatasetMetaIF:
         return self._dataset_meta
 
 

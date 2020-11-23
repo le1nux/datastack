@@ -1,5 +1,5 @@
 import gzip
-from data_hub.io.resources import StreamedResource, ResourceFactory
+from data_stack.io.resources import StreamedResource, ResourceFactory
 
 
 class PreprocessingHelpers:

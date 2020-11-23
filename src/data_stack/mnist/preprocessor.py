@@ -1,11 +1,10 @@
 import torch
-from typing import Tuple
 import codecs
 import numpy as np
-from data_hub.dataset.preprocesor import PreprocessingHelpers
-from data_hub.io.resources import ResourceFactory, StreamedResource
+from data_stack.dataset.preprocesor import PreprocessingHelpers
+from data_stack.io.resources import ResourceFactory, StreamedResource
 import io
-from data_hub.io.storage_connectors import StorageConnector
+from data_stack.io.storage_connectors import StorageConnector
 from torchvision import transforms
 
 
@@ -14,10 +13,11 @@ class MNISTPreprocessor:
     def __init__(self, storage_connector: StorageConnector):
         self.storage_connector = storage_connector
 
-    def preprocess(self, raw_sample_identifier: str, raw_target_identifier: str, sample_identifier: str, target_identifier:str) -> Tuple[StreamedResource]:
-        sample_resource = self._preprocess_sample_resource(raw_sample_identifier, sample_identifier)
-        target_resource = self._preprocess_target_resource(raw_target_identifier, target_identifier)
-        return sample_resource, target_resource
+    def preprocess(self, raw_sample_identifier: str, raw_target_identifier: str, sample_identifier: str, target_identifier: str):
+        with self._preprocess_sample_resource(raw_sample_identifier, sample_identifier) as sample_resource:
+            self.storage_connector.set_resource(identifier=sample_resource.identifier, resource=sample_resource)
+        with self._preprocess_target_resource(raw_target_identifier, target_identifier) as target_resource:
+            self.storage_connector.set_resource(identifier=target_resource.identifier, resource=target_resource)
 
     def _torch_tensor_to_streamed_resource(self, identifier: str, tensor: torch.Tensor) -> StreamedResource:
         buffer = io.BytesIO()

@@ -1,8 +1,8 @@
 import pytest
-from data_hub.dataset.iterator import DatasetIteratorIF, SequenceDatasetIterator
+from data_stack.dataset.iterator import DatasetIteratorIF, SequenceDatasetIterator
 from typing import List
-from data_hub.dataset.splitter import RandomSplitterImpl, Splitter
-from data_hub.dataset.meta import DatasetMeta, MetaFactory
+from data_stack.dataset.splitter import RandomSplitterImpl, Splitter
+from data_stack.dataset.meta import DatasetMeta, MetaFactory
 
 
 class TestSplitter:

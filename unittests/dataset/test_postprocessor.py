@@ -1,6 +1,6 @@
 import pytest
 from typing import List, Dict, Any, Tuple
-# from data_hub.dataset.postprocessors.postprocessor import LabelMapper
+# from data_stack.dataset.postprocessors.postprocessor import LabelMapper
 
 
 class TestLabelMapper:

@@ -1,5 +1,5 @@
-from data_hub.io.storage_connectors import StorageConnector, FileStorageConnector, StorageConnectorFactory
-from data_hub.exception import ResourceNotFoundError
+from data_stack.io.storage_connectors import StorageConnector, FileStorageConnector, StorageConnectorFactory
+from data_stack.exception import ResourceNotFoundError
 import pytest
 import io
 

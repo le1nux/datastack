@@ -1,7 +1,7 @@
 import pytest
-from data_hub.repository.repository import DatasetRepository
-from data_hub.dataset.factory import BaseDatasetFactory
-from data_hub.dataset.iterator import DatasetIteratorIF
+from data_stack.repository.repository import DatasetRepository
+from data_stack.dataset.factory import BaseDatasetFactory
+from data_stack.dataset.iterator import DatasetIteratorIF
 
 
 class MockedDatasetFactory(BaseDatasetFactory):

@@ -1,8 +1,8 @@
 from abc import ABC
-from data_hub.io.storage_connectors import StorageConnector
-from data_hub.dataset.iterator import DatasetIteratorIF, InformedDatasetIteratorIF, InformedDatasetIterator, CombinedDatasetIterator, DatasetIteratorView
+from data_stack.io.storage_connectors import StorageConnector
+from data_stack.dataset.iterator import DatasetIteratorIF, InformedDatasetIteratorIF, InformedDatasetIterator, CombinedDatasetIterator, DatasetIteratorView
 from typing import Tuple, List
-from data_hub.dataset.meta import IteratorMeta, DatasetMeta
+from data_stack.dataset.meta import IteratorMeta, DatasetMeta
 
 
 class BaseDatasetFactory(ABC):

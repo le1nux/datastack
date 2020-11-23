@@ -1,6 +1,6 @@
 import torch
-from data_hub.io.resources import StreamedResource
-from data_hub.dataset.iterator import SequenceDatasetIterator
+from data_stack.io.resources import StreamedResource
+from data_stack.dataset.iterator import SequenceDatasetIterator
 
 
 class MNISTIterator(SequenceDatasetIterator):

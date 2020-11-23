@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 
 from abc import ABC, abstractmethod
-from data_hub.util.logger import logger
-from data_hub.util.helper import is_safe_path
-from data_hub.exception import MaliciousFilePathError, ResourceNotFoundError
+from data_stack.util.logger import logger
+from data_stack.util.helper import is_safe_path
+from data_stack.exception import MaliciousFilePathError, ResourceNotFoundError
 import os
-from data_hub.io.resources import ResourceFactory, StreamedResource
+from data_stack.io.resources import ResourceFactory, StreamedResource
 
 
 class StorageConnectorFactory:
