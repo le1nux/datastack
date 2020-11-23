@@ -1,7 +1,10 @@
-<!--<img src="https://github.com/le1nux/datastack/blob/master/logo/logo.png" width="350"> -->
 # DataStack
 
 a stream-based file storage solution for machine learning datasets.
+
+[![PyPI version](https://badge.fury.io/py/datastack.svg)](https://badge.fury.io/py/datastack)
+[![CircleCI](https://circleci.com/gh/le1nux/datastack.svg?style=svg)](https://circleci.com/gh/le1nux/datastack)
+[![codecov](https://codecov.io/gh/le1nux/datastack/branch/master/graph/badge.svg)](https://codecov.io/gh/le1nux/datastack)
 
 Today, machine learning datasets are abundantly availabe on the internet, while coming in a variety of formats( e.g., [pandas dataframes](https://pandas.pydata.org/), CSV files, numpy arrays, excel sheets, [h5py](https://www.h5py.org/) and many more), which makes generic dataset processing complex. Luckily, almost all recent libraries provide a [file-like interface](https://docs.python.org/3/glossary.html#term-file-object) for loading and storing datasets as binary streams, which is also the common ground DataStack builds upon. In DataStack datasets are stored as plain binary streams and loaded via custom iterator implementations specific for each file type. Thereby, the storage itself is completely independent from the file-type. The binary streams can be even lazyily loaded, given that the iterator supports it. The H5Py file format for instance supports this out of the box. 
 
