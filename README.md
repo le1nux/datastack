@@ -22,7 +22,7 @@ DataStack offers the following key modules:
 
 ## Install
 
-There are two options to install DataStack, the easiest way it to install it from  the pip repository:
+There are two options to install DataStack, the easiest way is to install it from  the pip repository:
 
 ```bash
 pip install datastack
