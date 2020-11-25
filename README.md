@@ -46,3 +46,6 @@ To implement a new dataset, one has to implement 3 classes:
 
 DataStack provides a [examplary MNIST implementation](https://github.com/le1nux/datastack/blob/master/src/data_stack/mnist_example/factory.py). 
 
+## Copyright
+
+Copyright (c) 2020 Max Lübbering
