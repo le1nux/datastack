@@ -35,7 +35,7 @@ class RandomSplitterImpl(SplitterIF):
 
     def split(self, dataset_iterator: DatasetIteratorIF) -> List[DatasetIteratorIF]:
         dataset_length = len(dataset_iterator)
-        splits_indices = RandomSplitterImpl._determine_split_indices(dataset_length, self.ratios)
+        splits_indices = self._determine_split_indices(dataset_length, self.ratios)
 
         return [DatasetIteratorView(dataset_iterator, split_indices) for split_indices in splits_indices]
 

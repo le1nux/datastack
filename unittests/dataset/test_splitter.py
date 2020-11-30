@@ -23,7 +23,7 @@ class TestSplitter:
         return SequenceDatasetIterator(dataset_sequences=[list(range(10)), list(range(10))])
 
     def test_random_splitter(self, ratios: List[int], dataset_iterator: DatasetIteratorIF):
-        splitter_impl = RandomSplitterImpl(ratios=ratios)
+        splitter_impl = RandomSplitterImpl(ratios=ratios, seed=100)
         splitter = Splitter(splitter_impl)
         iterator_splits = splitter.split(dataset_iterator)
 
