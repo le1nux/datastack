@@ -7,8 +7,8 @@ import random
 class SplitterFactory:
 
     @staticmethod
-    def get_random_splitter(ratios: List[float]):
-        return Splitter(splitter_impl=RandomSplitterImpl(ratios))
+    def get_random_splitter(ratios: List[float], seed: int = 1):
+        return Splitter(splitter_impl=RandomSplitterImpl(ratios, seed=seed))
 
 
 class SplitterIF(ABC):
@@ -31,7 +31,7 @@ class RandomSplitterImpl(SplitterIF):
 
     def __init__(self, ratios: List[float], seed: int = 1):
         self.ratios = ratios
-        random.seed(seed)
+        self.random_gen = random.Random(seed)
 
     def split(self, dataset_iterator: DatasetIteratorIF) -> List[DatasetIteratorIF]:
         dataset_length = len(dataset_iterator)
@@ -39,13 +39,12 @@ class RandomSplitterImpl(SplitterIF):
 
         return [DatasetIteratorView(dataset_iterator, split_indices) for split_indices in splits_indices]
 
-    @staticmethod
-    def _determine_split_indices(dataset_length: int, ratios: List[int]) -> List[List[int]]:
+    def _determine_split_indices(self, dataset_length: int, ratios: List[int]) -> List[List[int]]:
         def ratio_to_index(ratio: float) -> int:
             return int(ratio*dataset_length)
 
         indices = list(range(dataset_length))
-        random.shuffle(indices)
+        self.random_gen.shuffle(indices)
         lower = 0
         upper = 0
         split_indices: List[List[int]] = []

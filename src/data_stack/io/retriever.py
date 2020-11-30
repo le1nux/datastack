@@ -62,7 +62,7 @@ class HTTPRetrieverImpl(RetrieverImplIF):
         with open(file_path, 'rb') as fd:
             calculated_md5_sum = calculate_md5(fd)
         if calculated_md5_sum != md5:
-            logger.fat(f"Given MD5 hash did not match with the md5 has of file {file_path}")
+            logger.fatal(f"Given MD5 hash did not match with the md5 has of file {file_path}")
             raise DatasetFileCorruptError
         return file_path
 

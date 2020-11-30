@@ -28,3 +28,17 @@ class TestSplitter:
         iterator_splits = splitter.split(dataset_iterator)
 
         assert sorted([i for split in iterator_splits for i in split]) == sorted(dataset_iterator)
+
+    def test_seeding(self):
+        ratios = [0.4, 0.6]
+        dataset_length = 100
+        splitter_impl_1 = RandomSplitterImpl(ratios=ratios, seed=1)
+        splitter_impl_2 = RandomSplitterImpl(ratios=ratios, seed=1)
+        splitter_impl_3 = RandomSplitterImpl(ratios=ratios, seed=2)
+
+        splits_indices_1 = splitter_impl_1._determine_split_indices(dataset_length=dataset_length, ratios=ratios)
+        splits_indices_2 = splitter_impl_2._determine_split_indices(dataset_length=dataset_length, ratios=ratios)
+        splits_indices_3 = splitter_impl_3._determine_split_indices(dataset_length=dataset_length, ratios=ratios)
+
+        assert splits_indices_1[0] == splits_indices_2[0] and splits_indices_1[1] == splits_indices_2[1]
+        assert splits_indices_1[0] != splits_indices_3[0] and splits_indices_1[1] != splits_indices_3[1]
