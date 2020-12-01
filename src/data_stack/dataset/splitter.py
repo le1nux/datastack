@@ -52,4 +52,6 @@ class RandomSplitterImpl(SplitterIF):
             upper = upper + ratio_to_index(ratio)
             split_indices.append(indices[lower: upper])
             lower = upper
+        # if we don't have a round split, we add the remaining samples to the last split.
+        split_indices[-1] = split_indices[-1] + indices[upper:]
         return split_indices
