@@ -9,6 +9,7 @@ setup(
     author='Max Luebbering',
     description="DataStack, a stream based solution for machine learning dataset retrieval and storage",
     long_description=long_description,
+    long_description_content_type='text/markdown',
     url="https://github.com/le1nux/datastack",
     packages=find_packages(),
     install_requires=[
