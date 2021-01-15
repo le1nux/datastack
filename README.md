@@ -49,3 +49,5 @@ DataStack provides a [examplary MNIST implementation](https://github.com/le1nux/
 ## Copyright
 
 Copyright (c) 2020 Max Lübbering
+For license see: https://github.com/le1nux/datastack/blob/master/LICENSE
+
