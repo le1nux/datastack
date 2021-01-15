@@ -7,7 +7,7 @@ import random
 class SplitterFactory:
 
     @staticmethod
-    def get_random_splitter(ratios: List[float], seed):
+    def get_random_splitter(ratios: List[float], seed: int):
         return Splitter(splitter_impl=RandomSplitterImpl(ratios, seed=seed))
 
 

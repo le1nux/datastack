@@ -7,7 +7,7 @@ from data_stack.dataset.meta import IteratorMeta, DatasetMeta
 
 class BaseDatasetFactory(ABC):
 
-    def __init__(self, storage_connector: StorageConnector):
+    def __init__(self, storage_connector: StorageConnector = None):
         self.storage_connector = storage_connector
 
     def get_dataset_iterator(self, split: str = None) -> Tuple[DatasetIteratorIF, IteratorMeta]:
