@@ -28,7 +28,7 @@ class TestReporting:
         return mnist_factory
 
     def test_plain_iterator_reporting(self, mnist_factory):
-        iterator, iterator_meta = mnist_factory.get_dataset_iterator(split="train")
+        iterator, iterator_meta = mnist_factory.get_dataset_iterator(config={"split": "train"})
         dataset_meta = MetaFactory.get_dataset_meta(identifier="id x", dataset_name="MNIST",
                                                     dataset_tag="train", iterator_meta=iterator_meta)
 
@@ -38,8 +38,9 @@ class TestReporting:
         assert report.length == 60000 and not report.sub_reports
 
     def test_combined_iterator_reporting(self, mnist_factory):
-        iterator_train, iterator_train_meta = mnist_factory.get_dataset_iterator(split="train")
-        iterator_test, iterator_test_meta = mnist_factory.get_dataset_iterator(split="test")
+        
+        iterator_train, iterator_train_meta = mnist_factory.get_dataset_iterator(config={"split": "train"})
+        iterator_test, iterator_test_meta = mnist_factory.get_dataset_iterator(config={"split": "test"})
         meta_train = MetaFactory.get_dataset_meta(identifier="id x", dataset_name="MNIST",
                                                   dataset_tag="train", iterator_meta=iterator_train_meta)
         meta_test = MetaFactory.get_dataset_meta(identifier="id x", dataset_name="MNIST",

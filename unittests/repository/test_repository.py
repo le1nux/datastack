@@ -24,5 +24,5 @@ class TestRepository:
 
     def test_register_and_get(self, repository: DatasetRepository, dataset_factory: MockedDatasetFactory):
         repository.register(identifier="x", dataset_factory=dataset_factory)
-        dataset = repository.get(identifier="x", split="x")
+        dataset = repository.get(identifier="x", config={"split": "train"})
         assert [i for i in dataset] == ["a", "b", "c"]

@@ -1,7 +1,7 @@
 from abc import ABC
 from data_stack.io.storage_connectors import StorageConnector
 from data_stack.dataset.iterator import DatasetIteratorIF, InformedDatasetIteratorIF, InformedDatasetIterator, CombinedDatasetIterator, DatasetIteratorView
-from typing import Tuple, List
+from typing import Tuple, List, Dict, Any
 from data_stack.dataset.meta import IteratorMeta, DatasetMeta
 
 
@@ -10,7 +10,7 @@ class BaseDatasetFactory(ABC):
     def __init__(self, storage_connector: StorageConnector = None):
         self.storage_connector = storage_connector
 
-    def get_dataset_iterator(self, split: str = None) -> Tuple[DatasetIteratorIF, IteratorMeta]:
+    def get_dataset_iterator(self, config: Dict[str, Any] = None) -> Tuple[DatasetIteratorIF, IteratorMeta]:
         raise NotImplementedError
 
 

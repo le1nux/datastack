@@ -88,13 +88,13 @@ if __name__ == "__main__":
     example_file_storage_path = os.path.join(data_stack_root, "example_file_storage")
     storage_connector = FileStorageConnector(root_path=example_file_storage_path)
     mnist_factory = MNISTFactory(storage_connector)
-    iterator = mnist_factory.get_dataset_iterator(split="train")
+    iterator = mnist_factory.get_dataset_iterator({"split": "train"})
     report = DatasetIteratorReportGenerator.generate_report(iterator)
     print(report)
 
     from data_stack.dataset.iterator import CombinedDatasetIterator
-    iterator_train = mnist_factory.get_dataset_iterator(split="train")
-    iterator_test = mnist_factory.get_dataset_iterator(split="test")
+    iterator_train = mnist_factory.get_dataset_iterator({"split": "train"})
+    iterator_test = mnist_factory.get_dataset_iterator({"split": "test"})
     meta = MetaFactory.get_dataset_meta_from_existing(
         iterator_test.dataset_meta, "combined", "my_tag")
     iterator = CombinedDatasetIterator([iterator_train, iterator_train, iterator_train], meta)
