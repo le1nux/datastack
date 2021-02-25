@@ -1,7 +1,7 @@
 import pytest
 from typing import List, Any, Tuple
 from data_stack.dataset.iterator import DatasetIteratorIF, SequenceDatasetIterator, DatasetIteratorView, \
-     CombinedDatasetIterator, InMemoryIterator
+     CombinedDatasetIterator, InMemoryDatasetIterator
 from itertools import chain
 
 
@@ -56,7 +56,7 @@ class TestIterator:
             assert orig_sample[2] == iterator_sample[2]
 
     def test_in_memory_dataset_iterator(self, dataset_iterator: DatasetIteratorIF, sequences):
-        in_memory_iterator = InMemoryIterator(dataset_iterator)
+        in_memory_iterator = InMemoryDatasetIterator(dataset_iterator)
 
         for orig_sample, iterator_sample in zip(zip(*sequences), in_memory_iterator):
             assert orig_sample[0] == iterator_sample[0]

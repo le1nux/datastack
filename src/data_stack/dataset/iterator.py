@@ -114,7 +114,7 @@ class CombinedDatasetIterator(DatasetIterator):
         return self._iterators
 
 
-class InMemoryIterator(DatasetIterator):
+class InMemoryDatasetIterator(DatasetIterator):
     """Loads a given iterator into memory to speed up the iteration.
     Note, that the InMemoryIterator also evaluates the provided iterator, solving the slowdown due to nesting."""
 
