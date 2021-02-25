@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import List, Sequence
 from data_stack.dataset.meta import DatasetMetaIF
+import tqdm
 
 
 class DatasetIteratorIF(ABC):
@@ -111,3 +112,24 @@ class CombinedDatasetIterator(DatasetIterator):
     @property
     def underlying_iterators(self) -> List["DatasetIteratorIF"]:
         return self._iterators
+
+
+class InMemoryIterator(DatasetIterator):
+    """Loads a given iterator into memory to speed up the iteration.
+    Note, that the InMemoryIterator also evaluates the provided iterator, solving the slowdown due to nesting."""
+
+    def __init__(self, dataset_iterator: DatasetIterator):
+        self._dataset_iterator = dataset_iterator
+        self._samples = [i for i in tqdm.tqdm(dataset_iterator, desc="Loading iterator to memory")]
+
+    def __len__(self):
+        return len(self._samples)
+
+    def __getitem__(self, index: int):
+        if index >= len(self._samples):
+            raise StopIteration
+        return self._samples[index]
+
+    @property
+    def underlying_iterators(self) -> List["DatasetIteratorIF"]:
+        return [self._dataset_iterator]
