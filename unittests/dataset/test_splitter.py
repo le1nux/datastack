@@ -54,14 +54,14 @@ class TestSplitter:
             for j in range(len(outer_folds)):
                 if i != j:
                     # makes sure there is no intersection
-                    assert len(set(outer_folds[i]._indices).intersection(set(outer_folds[j]._indices))) == 0
+                    assert len(set(outer_folds[i].indices).intersection(set(outer_folds[j].indices))) == 0
         # make sure that inner folds have no intersection
         for i in range(len(inner_folds)):
             for j in range(len(inner_folds[i])):
                 for k in range(len(inner_folds[i])):
                     if j != k:
                         # makes sure there is no intersection
-                        assert len(set(inner_folds[i][j]._indices).intersection(set(inner_folds[i][k]._indices))) == 0
+                        assert len(set(inner_folds[i][j].indices).intersection(set(inner_folds[i][k].indices))) == 0
         # test stratification
         if outer_stratification:
             class_counts = dict(collections.Counter([t for _, t in big_dataset_iterator]))

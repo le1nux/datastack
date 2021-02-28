@@ -91,6 +91,10 @@ class DatasetIteratorView(DatasetIterator):
     def underlying_iterators(self) -> List["DatasetIteratorIF"]:
         return [self._dataset_iterator]
 
+    @property
+    def indices(self) -> List[int]:
+        return self._indices
+
 
 class CombinedDatasetIterator(DatasetIterator):
 

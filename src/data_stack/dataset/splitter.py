@@ -1,8 +1,8 @@
 from data_stack.dataset.iterator import DatasetIteratorIF, DatasetIteratorView
-from typing import List, Tuple
+from typing import List, Tuple, Any
 from abc import ABC, abstractmethod
 import random
-from sklearn.model_selection import StratifiedKFold, KFold, GroupKFold
+from sklearn.model_selection import StratifiedKFold, KFold
 import numpy as np
 
 
@@ -12,11 +12,28 @@ class SplitterFactory:
     def get_random_splitter(ratios: List[float], seed: int):
         return Splitter(splitter_impl=RandomSplitterImpl(ratios, seed=seed))
 
+    @staticmethod
+    def get_nested_cv_splitter(num_outer_loop_folds: int = 5, num_inner_loop_folds: int = 2,
+                               inner_stratification: bool = True, outer_stratification: bool = True,
+                               target_pos: int = 1, shuffle: bool = True, seed: int = 1):
+        splitter_impl = NestedCVSplitterImpl(num_outer_loop_folds=num_outer_loop_folds,
+                                             num_inner_loop_folds=num_inner_loop_folds,
+                                             inner_stratification=inner_stratification,
+                                             outer_stratification=outer_stratification,
+                                             target_pos=target_pos,
+                                             shuffle=shuffle,
+                                             seed=seed)
+        return Splitter(splitter_impl=splitter_impl)
+
 
 class SplitterIF(ABC):
 
     @abstractmethod
     def split(self, dataset_iterator: DatasetIteratorIF) -> List[DatasetIteratorIF]:
+        raise NotImplementedError
+
+    @abstractmethod
+    def get_indices(self, dataset_iterator: DatasetIteratorIF) -> Any:
         raise NotImplementedError
 
 
@@ -28,6 +45,9 @@ class Splitter(SplitterIF):
     def split(self, dataset_iterator: DatasetIteratorIF) -> List[DatasetIteratorIF]:
         return self.splitter_impl.split(dataset_iterator)
 
+    def get_indices(self, dataset_iterator: DatasetIteratorIF) -> Any:
+        return self.splitter_impl.get_indices(dataset_iterator)
+
 
 class RandomSplitterImpl(SplitterIF):
 
@@ -35,7 +55,7 @@ class RandomSplitterImpl(SplitterIF):
         self.ratios = ratios
         self.random_gen = random.Random(seed)
 
-    def split(self, dataset_iterator: DatasetIteratorIF) -> List[DatasetIteratorIF]:
+    def split(self, dataset_iterator: DatasetIteratorIF) -> List[DatasetIteratorView]:
         dataset_length = len(dataset_iterator)
         splits_indices = self._determine_split_indices(dataset_length, self.ratios)
 
@@ -57,6 +77,11 @@ class RandomSplitterImpl(SplitterIF):
         # if we don't have a round split, we add the remaining samples to the last split.
         split_indices[-1] = split_indices[-1] + indices[upper:]
         return split_indices
+
+    def get_indices(self, dataset_iterator: DatasetIteratorIF) -> List[List[int]]:
+        dataset_length = len(dataset_iterator)
+        splits_indices = self._determine_split_indices(dataset_length, self.ratios)
+        return splits_indices
 
 
 class NestedCVSplitterImpl(SplitterIF):
@@ -96,3 +121,10 @@ class NestedCVSplitterImpl(SplitterIF):
             inner_folds = [DatasetIteratorView(iterator, fold_indices) for fold_indices in folds_indices]
             inner_folds_list.append(inner_folds)
         return outer_folds, inner_folds_list
+
+    def get_indices(self, dataset_iterator: DatasetIteratorIF) -> Tuple[List[List[int]], List[List[int]]]:
+        outer_folds, inner_folds_list = self.split(dataset_iterator)
+        outer_folds_indices = [fold.indices for fold in outer_folds]
+        inner_fold_indices = [[fold.indices for fold in folds] for folds in inner_folds_list]
+
+        return outer_folds_indices, inner_fold_indices
