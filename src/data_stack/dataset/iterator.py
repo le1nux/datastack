@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import List, Sequence
+from typing import List, Sequence, Dict, Any
 from data_stack.dataset.meta import DatasetMetaIF
 import tqdm
 
@@ -74,9 +74,10 @@ class SequenceDatasetIterator(DatasetIterator):
 class DatasetIteratorView(DatasetIterator):
     """Provides a view on a `DatasetIterator` for accessing elements of a given split only."""
 
-    def __init__(self, dataset_iterator: DatasetIterator, indices: List[int]):
+    def __init__(self, dataset_iterator: DatasetIterator, indices: List[int], view_tags: Dict[str, Any] = None):
         self._dataset_iterator = dataset_iterator
         self._indices = indices
+        self._view_tags = view_tags
 
     def __len__(self):
         return len(self._indices)
@@ -94,6 +95,10 @@ class DatasetIteratorView(DatasetIterator):
     @property
     def indices(self) -> List[int]:
         return self._indices
+
+    @property
+    def view_tags(self) -> Dict[str, Any]:
+        self._view_tags
 
 
 class CombinedDatasetIterator(DatasetIterator):

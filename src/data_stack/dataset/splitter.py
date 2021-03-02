@@ -124,7 +124,7 @@ class NestedCVSplitterImpl(SplitterIF):
 
     def get_indices(self, dataset_iterator: DatasetIteratorIF) -> Tuple[List[List[int]], List[List[int]]]:
         outer_folds, inner_folds_list = self.split(dataset_iterator)
-        outer_folds_indices = [fold.indices for fold in outer_folds]
-        inner_fold_indices = [[fold.indices for fold in folds] for folds in inner_folds_list]
+        outer_folds_indices = [fold.indices.tolist() for fold in outer_folds]
+        inner_fold_indices = [[fold.indices.tolist() for fold in folds] for folds in inner_folds_list]
 
         return outer_folds_indices, inner_fold_indices
