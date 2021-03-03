@@ -1,14 +1,20 @@
 from data_stack.dataset.iterator import DatasetIteratorIF, DatasetIteratorView
-from typing import List
+from typing import List, Dict
 from abc import ABC, abstractmethod
+from sklearn.model_selection import train_test_split
+import logging
 import random
-
+import sys
 
 class SplitterFactory:
 
     @staticmethod
     def get_random_splitter(ratios: List[float], seed: int):
         return Splitter(splitter_impl=RandomSplitterImpl(ratios, seed=seed))
+
+    @staticmethod
+    def get_stratified_splitter(split_config: Dict):
+        return Splitter(splitter_impl=StratifiedSplitterImpl(split_config))
 
 
 class SplitterIF(ABC):
@@ -54,4 +60,44 @@ class RandomSplitterImpl(SplitterIF):
             lower = upper
         # if we don't have a round split, we add the remaining samples to the last split.
         split_indices[-1] = split_indices[-1] + indices[upper:]
+        return split_indices
+
+
+class StratifiedSplitterImpl(SplitterIF):
+
+    def __init__(self, split_config: Dict):
+        self.split_config = split_config
+
+    def split(self, dataset_iterator: DatasetIteratorIF) -> List[DatasetIteratorIF]:
+        dataset_length = len(dataset_iterator)
+        splits_indices = self._determine_split_indices(dataset_length, self.split_config, dataset_iterator)
+
+        return [DatasetIteratorView(dataset_iterator, split_indices) for split_indices in splits_indices]
+
+    def _determine_split_indices(self, dataset_length: int, split_config: Dict, dataset_iterator: DatasetIteratorIF)\
+            -> List[List[int]]:
+        indices = list(range(dataset_length))
+        targets = [sample[1] for sample in dataset_iterator]
+
+        split_indices: List[List[int]] = []
+
+        # split the training set until the desired number of splits is reached
+        if "train" in split_config.keys():
+            train_indices, test_indices, train_targets, test_targets = train_test_split(indices, targets,
+                                                    train_size = int(len(indices)*split_config["train"]))
+            split_indices.append(train_indices)
+        else:
+            logging.error("Training split was not provided")
+            sys.exit(1)
+        for split in split_config.keys():
+            if split != "train":
+                train_indices, test_indices, train_targets, test_targets = train_test_split(test_indices, test_targets,
+                                                    train_size = int(len(indices)*split_config[split]))
+                split_indices.append(train_indices)
+
+        # make sure all indices are in the final list, and there are no overlaps
+        assert([ind in split for ind in indices for split in split_indices])
+        assert(all([len(set(split1).intersection(set(split2))) == 0 for split1 in split_indices for split2 in
+                    split_indices if split1 != split2]))
+
         return split_indices
