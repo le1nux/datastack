@@ -5,7 +5,7 @@ with open("../README.md", "r") as fh:
 
 setup(
     name='datastack',
-    version='0.0.8',
+    version='0.0.9',
     author='Max Luebbering',
     description="DataStack, a stream based solution for machine learning dataset retrieval and storage",
     long_description=long_description,
