@@ -96,7 +96,7 @@ class NestedCVSplitterImpl(SplitterIF):
                  seed: int = 1):
         self.num_outer_loop_folds = num_outer_loop_folds
         self.num_inner_loop_folds = num_inner_loop_folds
-        self.random_state = np.random.RandomState(seed=seed)
+        self.random_state = np.random.RandomState(seed=seed) if shuffle else None
         self.target_pos = target_pos
 
         if inner_stratification:
