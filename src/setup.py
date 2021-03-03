@@ -18,7 +18,8 @@ setup(
                       "torch",
                       "torchvision",
                       "tqdm",
-                      "PyYAML"
+                      "PyYAML",
+                      "scikit-learn"
                       ],
     python_requires=">=3.7"
 )
