@@ -95,9 +95,4 @@ class StratifiedSplitterImpl(SplitterIF):
                                                     train_size = int(len(indices)*split_config[split]))
                 split_indices.append(train_indices)
 
-        # make sure all indices are in the final list, and there are no overlaps
-        assert([ind in split for ind in indices for split in split_indices])
-        assert(all([len(set(split1).intersection(set(split2))) == 0 for split1 in split_indices for split2 in
-                    split_indices if split1 != split2]))
-
         return split_indices
