@@ -74,7 +74,7 @@ class TestSplitter:
         if inner_stratification:
             for i in range(len(inner_folds)):
                 class_counts = dict(collections.Counter([t for _, t in outer_folds[i]]))
-                class_counts_per_fold = {target_class: int(count/num_inner_loop_folds) for target_class, count in class_counts.items()}
+                class_counts_per_fold = {target_class: int(count*(num_outer_loop_folds-1)/num_inner_loop_folds) for target_class, count in class_counts.items()}
                 for fold in inner_folds[i]:
                     fold_class_counts = dict(collections.Counter([t for _, t in fold]))
                     for key in list(class_counts_per_fold.keys()) + list(fold_class_counts.keys()):
