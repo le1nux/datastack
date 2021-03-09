@@ -122,6 +122,11 @@ class StratifiedSplitterImpl(SplitterIF):
                 split_indices.append(train_indices)
         return split_indices
 
+    def get_indices(self, dataset_iterator: DatasetIteratorIF) -> List[List[int]]:
+        dataset_length = len(dataset_iterator)
+        splits_indices = self._determine_split_indices(dataset_length, self.split_config, dataset_iterator)
+        return splits_indices
+
 
 class NestedCVSplitterImpl(SplitterIF):
 
