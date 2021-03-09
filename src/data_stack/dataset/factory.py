@@ -1,7 +1,7 @@
 from abc import ABC
 from data_stack.io.storage_connectors import StorageConnector
 from data_stack.dataset.iterator import DatasetIteratorIF, InformedDatasetIteratorIF, InformedDatasetIterator, CombinedDatasetIterator, \
-     DatasetIteratorView, InMemoryDatasetIterator
+    DatasetIteratorView, InMemoryDatasetIterator
 from typing import Tuple, List, Dict, Any
 from data_stack.dataset.meta import IteratorMeta, DatasetMeta
 
@@ -21,8 +21,8 @@ class HigherOrderDatasetFactory:
         return CombinedDatasetIterator(iterators)
 
     @staticmethod
-    def get_dataset_iterator_view(iterator: DatasetIteratorIF, indices: List[int]) -> DatasetIteratorIF:
-        return DatasetIteratorView(iterator, indices)
+    def get_dataset_iterator_view(iterator: DatasetIteratorIF, indices: List[int], view_tags: Dict[str, Any]) -> DatasetIteratorIF:
+        return DatasetIteratorView(iterator, indices, view_tags)
 
 
 class InformedDatasetFactory:
@@ -37,8 +37,9 @@ class InformedDatasetFactory:
         return InformedDatasetIterator(iterator, meta)
 
     @staticmethod
-    def get_dataset_iterator_view(iterator: DatasetIteratorIF, meta: DatasetMeta, indices: List[int]) -> InformedDatasetIteratorIF:
-        iterator = HigherOrderDatasetFactory.get_dataset_iterator_view(iterator, indices)
+    def get_dataset_iterator_view(iterator: DatasetIteratorIF, meta: DatasetMeta, indices: List[int],
+                                  view_tags: Dict[str, Any] = None) -> InformedDatasetIteratorIF:
+        iterator = HigherOrderDatasetFactory.get_dataset_iterator_view(iterator, indices, view_tags)
         return InformedDatasetIterator(iterator, meta)
 
     @staticmethod
