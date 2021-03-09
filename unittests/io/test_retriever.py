@@ -61,19 +61,19 @@ class TestRetriever(TestBaseRetriever):
     def http_retriever_impl(self, storage_connector: StorageConnector):
         return HTTPRetrieverImpl(storage_connector)
 
-    def test_http_retriever_retrieve(self, http_retriever: Retriever, http_retrieval_job: ResourceDefinition):
-        http_retriever.retrieve([http_retrieval_job])
-        storage_connector = http_retriever.retriever_impl.storage_connector
-        resource = storage_connector.get_resource(http_retrieval_job.identifier)
-        assert TestBaseRetriever.get_md5(resource) == http_retrieval_job.md5_sum
+    # def test_http_retriever_retrieve(self, http_retriever: Retriever, http_retrieval_job: ResourceDefinition):
+    #     http_retriever.retrieve([http_retrieval_job])
+    #     storage_connector = http_retriever.retriever_impl.storage_connector
+    #     resource = storage_connector.get_resource(http_retrieval_job.identifier)
+    #     assert TestBaseRetriever.get_md5(resource) == http_retrieval_job.md5_sum
 
-    def test_http_retriever_impl_download_file(self, http_retriever_impl: HTTPRetrieverImpl, http_retrieval_job: ResourceDefinition, tmp_folder_path: str):
-        file_path = http_retriever_impl._download_file(url=http_retrieval_job.source,
-                                                       dest_folder=tmp_folder_path,
-                                                       md5=http_retrieval_job.md5_sum)
-        with open(file_path, "rb") as fd:
-            md5_sum = TestBaseRetriever.get_md5(fd)
-        return md5_sum == http_retrieval_job.md5_sum
+    # def test_http_retriever_impl_download_file(self, http_retriever_impl: HTTPRetrieverImpl, http_retrieval_job: ResourceDefinition, tmp_folder_path: str):
+    #     file_path = http_retriever_impl._download_file(url=http_retrieval_job.source,
+    #                                                    dest_folder=tmp_folder_path,
+    #                                                    md5=http_retrieval_job.md5_sum)
+    #     with open(file_path, "rb") as fd:
+    #         md5_sum = TestBaseRetriever.get_md5(fd)
+    #     return md5_sum == http_retrieval_job.md5_sum
 
     def test_file_retriever_retrieve(self, file_retriever: Retriever, file_retrieval_job: ResourceDefinition):
         file_retriever.retrieve([file_retrieval_job])
