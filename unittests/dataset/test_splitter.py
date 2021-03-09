@@ -1,15 +1,19 @@
 import pytest
+import numpy as np
 from data_stack.dataset.iterator import DatasetIteratorIF, SequenceDatasetIterator
-from typing import List
-from data_stack.dataset.splitter import RandomSplitterImpl, Splitter, NestedCVSplitterImpl
+from typing import List, Dict
+from data_stack.dataset.splitter import RandomSplitterImpl, StratifiedSplitterImpl, Splitter
 from data_stack.dataset.meta import DatasetMeta, MetaFactory
-import collections
 
 
 class TestSplitter:
     @pytest.fixture
     def ratios(self) -> List[int]:
         return [0.3, 0.3, 0.2, 0.1, 0.1]
+
+    @pytest.fixture
+    def split_config(self) -> List[int]:
+        return {"train": 0.5, "val": 0.25, "test": 0.25}
 
     @pytest.fixture
     def dataset_meta(self) -> DatasetMeta:
@@ -24,10 +28,8 @@ class TestSplitter:
         return SequenceDatasetIterator(dataset_sequences=[list(range(10)), list(range(10))])
 
     @pytest.fixture
-    def big_dataset_iterator(self) -> DatasetIteratorIF:
-        targets = [j for i in range(10) for j in range(9)] + [10]*1000
-        samples = [0]*len(targets)
-        return SequenceDatasetIterator(dataset_sequences=[samples, targets])
+    def dataset_iterator_stratifiable(self) -> DatasetIteratorIF:
+        return SequenceDatasetIterator(dataset_sequences=[list(range(10)), [0,0,0,1,1,0,0,1,0,1]])
 
     def test_random_splitter(self, ratios: List[int], dataset_iterator: DatasetIteratorIF):
         splitter_impl = RandomSplitterImpl(ratios=ratios, seed=100)
@@ -36,49 +38,22 @@ class TestSplitter:
 
         assert sorted([i for split in iterator_splits for i in split]) == sorted(dataset_iterator)
 
-    @pytest.mark.parametrize(
-        "num_outer_loop_folds, num_inner_loop_folds, inner_stratification, outer_stratification, shuffle",
-        [(5, 2, True, True, False), (5, 2, True, True, True), (5, 2, False, False, True), (5, 2, False, False, False)],
-    )
-    def test_nested_cv_splitter(self, num_outer_loop_folds: int, num_inner_loop_folds: int, inner_stratification: bool,
-                                outer_stratification: bool, shuffle: bool, big_dataset_iterator: DatasetIteratorIF):
-        splitter_impl = NestedCVSplitterImpl(num_outer_loop_folds=num_outer_loop_folds,
-                                             num_inner_loop_folds=num_inner_loop_folds,
-                                             inner_stratification=inner_stratification,
-                                             outer_stratification=outer_stratification,
-                                             shuffle=shuffle)
+    def test_stratified_splitter(self, split_config: Dict[str, int], dataset_iterator_stratifiable: DatasetIteratorIF):
+        splitter_impl = StratifiedSplitterImpl(split_config=split_config)
         splitter = Splitter(splitter_impl)
-        outer_folds, inner_folds = splitter.split(big_dataset_iterator)
-        # make sure that outer folds have no intersection
-        for i in range(len(outer_folds)):
-            for j in range(len(outer_folds)):
-                if i != j:
-                    # makes sure there is no intersection
-                    assert len(set(outer_folds[i].indices).intersection(set(outer_folds[j].indices))) == 0
-        # make sure that inner folds have no intersection
-        for i in range(len(inner_folds)):
-            for j in range(len(inner_folds[i])):
-                for k in range(len(inner_folds[i])):
-                    if j != k:
-                        # makes sure there is no intersection
-                        assert len(set(inner_folds[i][j].indices).intersection(set(inner_folds[i][k].indices))) == 0
-        # test stratification
-        if outer_stratification:
-            class_counts = dict(collections.Counter([t for _, t in big_dataset_iterator]))
-            class_counts_per_fold = {target_class: int(count/num_outer_loop_folds) for target_class, count in class_counts.items()}
-            for fold in outer_folds:
-                fold_class_counts = dict(collections.Counter([t for _, t in fold]))
-                for key in list(class_counts_per_fold.keys()) + list(fold_class_counts.keys()):
-                    assert class_counts_per_fold[key] == fold_class_counts[key]
+        iterator_splits = splitter.split(dataset_iterator_stratifiable)
 
-        if inner_stratification:
-            for i in range(len(inner_folds)):
-                class_counts = dict(collections.Counter([t for _, t in outer_folds[i]]))
-                class_counts_per_fold = {target_class: int(count/num_inner_loop_folds) for target_class, count in class_counts.items()}
-                for fold in inner_folds[i]:
-                    fold_class_counts = dict(collections.Counter([t for _, t in fold]))
-                    for key in list(class_counts_per_fold.keys()) + list(fold_class_counts.keys()):
-                        assert class_counts_per_fold[key] == fold_class_counts[key]
+        assert sorted([i for split in iterator_splits for i in split]) == sorted(dataset_iterator_stratifiable)
+
+    def test_stratification(self, split_config: Dict[str, int], dataset_iterator_stratifiable: DatasetIteratorIF):
+        splitter_impl = StratifiedSplitterImpl(split_config=split_config)
+        splitter = Splitter(splitter_impl)
+        iterator_splits = splitter.split(dataset_iterator_stratifiable)
+
+        # target distribution should be equal among all splits
+        assert(sum([sample[1] for sample in iterator_splits[0]]) == 2)
+        assert(sum([sample[1] for sample in iterator_splits[1]]) == 1)
+        assert(sum([sample[1] for sample in iterator_splits[1]]) == 1)
 
     def test_seeding(self):
         ratios = [0.4, 0.6]

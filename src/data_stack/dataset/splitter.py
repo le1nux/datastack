@@ -120,6 +120,7 @@ class StratifiedSplitterImpl(SplitterIF):
                 train_indices, test_indices, train_targets, test_targets = train_test_split(test_indices, test_targets,
                                                     train_size = int(len(indices)*split_config[split]))
                 split_indices.append(train_indices)
+        split_indices.append(test_indices)
         return split_indices
 
     def get_indices(self, dataset_iterator: DatasetIteratorIF) -> List[List[int]]:
