@@ -109,7 +109,7 @@ class StratifiedSplitterImpl(SplitterIF):
 
         # split the training set until the desired number of splits is reached
         if "train" in split_config.keys():
-            train_indices, test_indices, train_targets, test_targets = train_test_split(indices, targets,
+            train_indices, test_indices, _, test_targets = train_test_split(indices, targets,
                                                     train_size = int(len(indices)*split_config["train"]),
                                                     stratify=targets)
             split_indices.append(train_indices)
@@ -118,7 +118,7 @@ class StratifiedSplitterImpl(SplitterIF):
             sys.exit(1)
         for split in list(split_config.keys())[:-1]:
             if split != "train":
-                train_indices, test_indices, train_targets, test_targets = train_test_split(test_indices, test_targets,
+                train_indices, test_indices, _, test_targets = train_test_split(test_indices, test_targets,
                                                     train_size = int(len(indices)*split_config[split]),
                                                     stratify=test_targets)
                 split_indices.append(train_indices)
