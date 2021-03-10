@@ -29,7 +29,8 @@ class TestSplitter:
 
     @pytest.fixture
     def dataset_iterator_stratifiable(self) -> DatasetIteratorIF:
-        return SequenceDatasetIterator(dataset_sequences=[list(range(10)), [0,0,0,1,1,0,0,1,0,1]])
+        return SequenceDatasetIterator(dataset_sequences=[list(range(20)), list(np.ones(8, dtype=int))+
+                                                                            list(np.zeros(12, dtype=int))])
 
     def test_random_splitter(self, ratios: List[int], dataset_iterator: DatasetIteratorIF):
         splitter_impl = RandomSplitterImpl(ratios=ratios, seed=100)
@@ -51,9 +52,9 @@ class TestSplitter:
         iterator_splits = splitter.split(dataset_iterator_stratifiable)
 
         # target distribution should be equal among all splits
-        assert(sum([sample[1] for sample in iterator_splits[0]]) == 2)
-        assert(sum([sample[1] for sample in iterator_splits[1]]) == 1)
-        assert(sum([sample[1] for sample in iterator_splits[1]]) == 1)
+        assert(sum([sample[1] for sample in iterator_splits[0]]) == 4)
+        assert(sum([sample[1] for sample in iterator_splits[1]]) == 2)
+        assert(sum([sample[1] for sample in iterator_splits[2]]) == 2)
 
     def test_seeding(self):
         ratios = [0.4, 0.6]
