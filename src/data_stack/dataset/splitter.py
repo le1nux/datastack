@@ -158,17 +158,21 @@ class NestedCVSplitterImpl(SplitterIF):
 
     def split(self, dataset_iterator: DatasetIteratorIF) -> Tuple[List[DatasetIteratorIF], List[List[DatasetIteratorIF]]]:
         # create outer loop folds
-        targets = [sample[self.target_pos] for sample in dataset_iterator]
-        folds_indices = [fold[1] for fold in self.outer_splitter.split(X=np.zeros(len(targets)), y=targets)]
-        outer_folds = [DatasetIteratorView(dataset_iterator, fold_indices) for fold_indices in folds_indices]
+        targets = np.array([sample[self.target_pos] for sample in dataset_iterator])
+        outer_folds_indices = [fold[1] for fold in self.outer_splitter.split(X=np.zeros(len(targets)), y=targets)]
+        outer_fold_iterators = [DatasetIteratorView(dataset_iterator, fold_indices) for fold_indices in outer_folds_indices]
         # create inner loop folds
-        inner_folds_list = []  # contains [inner folds of outer_fold_1, inner folds of outer_fold_2 ...]
-        for iterator in outer_folds:
-            targets = [sample[self.target_pos] for sample in iterator]
-            folds_indices = [fold[1] for fold in self.inner_splitter.split(X=np.zeros(len(targets)), y=targets)]
-            inner_folds = [DatasetIteratorView(iterator, fold_indices) for fold_indices in folds_indices]
-            inner_folds_list.append(inner_folds)
-        return outer_folds, inner_folds_list
+        inner_folds_iterators_list = []  # contains [inner folds of outer_fold_1, inner folds of outer_fold_2 ...]
+        for outer_fold_id in range(len(outer_fold_iterators)):
+            # concat the indices of the splits which belong to the train splits
+            train_split_ids = [i for i in range(len(outer_folds_indices)) if i != outer_fold_id]
+            outer_train_fold_indices = np.array([indice for i in train_split_ids for indice in outer_folds_indices[i]])
+            inner_targets = targets[outer_train_fold_indices]
+            inner_folds_indices = [outer_train_fold_indices[inner_fold[1]]
+                                   for inner_fold in self.inner_splitter.split(X=np.zeros(len(inner_targets)), y=inner_targets)]
+            inner_folds = [DatasetIteratorView(dataset_iterator, fold_indices) for fold_indices in inner_folds_indices]
+            inner_folds_iterators_list.append(inner_folds)
+        return outer_fold_iterators, inner_folds_iterators_list
 
     def get_indices(self, dataset_iterator: DatasetIteratorIF) -> Tuple[List[List[int]], List[List[int]]]:
         outer_folds, inner_folds_list = self.split(dataset_iterator)

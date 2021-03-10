@@ -19,7 +19,6 @@ class DatasetIteratorReport:
     sample_pos: int
     target_pos: int
     tag_pos: int
-    sample_shape: List[int]
     target_dist: Dict[Union[str, int], int]
     iteration_speed: float
     sub_reports: List["DatasetIteratorReport"]
@@ -38,9 +37,9 @@ class DatasetIteratorReportGenerator:
         target_dist = {k: v for k, v in sorted(Counter([row[meta.target_pos] for row in iterator]).items())}
         iteration_speed = DatasetIteratorReportGenerator.measure_iteration_speed(iterator)
         # generate report
+
         report = DatasetIteratorReport(meta.identifier, meta.dataset_name, meta.dataset_tag, len(iterator), meta.sample_pos,
-                                       meta.target_pos, meta.tag_pos, list(iterator[0][meta.sample_pos].shape), target_dist,
-                                       iteration_speed, sub_reports)
+                                       meta.target_pos, meta.tag_pos, target_dist, iteration_speed, sub_reports)
         # format report
         if report_format == DatasetIteratorReportGenerator.ReportFormat.JSON:
             return DatasetIteratorReportGenerator._to_json(report)
