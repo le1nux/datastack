@@ -1,13 +1,11 @@
 import pytest
-from typing import List
-from data_stack.mnist.factory import MNISTFactory
 from data_stack.io.storage_connectors import StorageConnector, StorageConnectorFactory
 from data_stack.dataset.reporting import DatasetIteratorReportGenerator
 import tempfile
 import shutil
-from data_stack.dataset.iterator import InformedDatasetIterator
-from data_stack.dataset.meta import MetaFactory
 from data_stack.dataset.factory import InformedDatasetFactory
+from data_stack.dataset.meta import DatasetMeta, MetaFactory
+from data_stack.dataset.iterator import DatasetIteratorIF, SequenceDatasetIterator, InformedDatasetIterator
 
 
 class TestReporting:
@@ -22,36 +20,38 @@ class TestReporting:
     def storage_connector(self, tmp_folder_path: str) -> StorageConnector:
         return StorageConnectorFactory.get_file_storage_connector(tmp_folder_path)
 
-    @pytest.fixture(scope="session")
-    def mnist_factory(self, storage_connector) -> List[int]:
-        mnist_factory = MNISTFactory(storage_connector)
-        return mnist_factory
+    # @pytest.fixture(scope="session")
+    # def mnist_factory(self, storage_connector) -> List[int]:
+    #     mnist_factory = MNISTFactory(storage_connector)
+    #     return mnist_factory
 
-    def test_plain_iterator_reporting(self, mnist_factory):
-        iterator, iterator_meta = mnist_factory.get_dataset_iterator(config={"split": "train"})
-        dataset_meta = MetaFactory.get_dataset_meta(identifier="id x", dataset_name="MNIST",
-                                                    dataset_tag="train", iterator_meta=iterator_meta)
+    @pytest.fixture
+    def dataset_meta(self) -> DatasetMeta:
+        iterator_meta = MetaFactory.get_iterator_meta(sample_pos=0, target_pos=1, tag_pos=2)
+        return MetaFactory.get_dataset_meta(identifier="identifier_1",
+                                            dataset_name="TEST DATASET",
+                                            dataset_tag="train",
+                                            iterator_meta=iterator_meta)
 
-        informed_iterator = InformedDatasetIterator(iterator, dataset_meta)
-        report = DatasetIteratorReportGenerator.generate_report(informed_iterator)
+    @pytest.fixture
+    def dataset_iterator(self) -> DatasetIteratorIF:
+        targets = [j for i in range(10) for j in range(9)] + [10]*1000
+        samples = [0]*len(targets)
+        return SequenceDatasetIterator(dataset_sequences=[samples, targets])
+
+    @pytest.fixture
+    def informed_dataset_iterator(self, dataset_iterator, dataset_meta) -> DatasetIteratorIF:
+        return InformedDatasetFactory.get_dataset_iterator(dataset_iterator, dataset_meta)
+
+    def test_plain_iterator_reporting(self, informed_dataset_iterator):
+        report = DatasetIteratorReportGenerator.generate_report(informed_dataset_iterator)
         print(report)
-        assert report.length == 60000 and not report.sub_reports
+        assert report.length == 1090 and not report.sub_reports
 
-    def test_combined_iterator_reporting(self, mnist_factory):
-        
-        iterator_train, iterator_train_meta = mnist_factory.get_dataset_iterator(config={"split": "train"})
-        iterator_test, iterator_test_meta = mnist_factory.get_dataset_iterator(config={"split": "test"})
-        meta_train = MetaFactory.get_dataset_meta(identifier="id x", dataset_name="MNIST",
-                                                  dataset_tag="train", iterator_meta=iterator_train_meta)
-        meta_test = MetaFactory.get_dataset_meta(identifier="id x", dataset_name="MNIST",
-                                                 dataset_tag="train", iterator_meta=iterator_test_meta)
-
-        informed_iterator_train = InformedDatasetFactory.get_dataset_iterator(iterator_train, meta_train)
-        informed_iterator_test = InformedDatasetFactory.get_dataset_iterator(iterator_test, meta_test)
-
-        meta_combined = MetaFactory.get_dataset_meta_from_existing(informed_iterator_train.dataset_meta, dataset_tag="full")
-
-        iterator = InformedDatasetFactory.get_combined_dataset_iterator([informed_iterator_train, informed_iterator_test], meta_combined)
+    def test_combined_iterator_reporting(self, informed_dataset_iterator):
+        meta_combined = MetaFactory.get_dataset_meta_from_existing(informed_dataset_iterator.dataset_meta, dataset_tag="full")
+        iterator = InformedDatasetFactory.get_combined_dataset_iterator(
+            [informed_dataset_iterator, informed_dataset_iterator], meta_combined)
         report = DatasetIteratorReportGenerator.generate_report(iterator)
-        assert report.length == 70000 and report.sub_reports[0].length == 60000 and report.sub_reports[1].length == 10000
+        assert report.length == 2180 and report.sub_reports[0].length == 1090 and report.sub_reports[1].length == 1090
         assert not report.sub_reports[0].sub_reports and not report.sub_reports[1].sub_reports
