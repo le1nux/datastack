@@ -13,10 +13,6 @@ class TestSplitter:
         return [0.3, 0.3, 0.2, 0.1, 0.1]
 
     @pytest.fixture
-    def split_config(self) -> List[int]:
-        return {"train": 0.5, "val": 0.25, "test": 0.25}
-
-    @pytest.fixture
     def dataset_meta(self) -> DatasetMeta:
         iterator_meta = MetaFactory.get_iterator_meta(sample_pos=0, target_pos=1, tag_pos=2)
         return MetaFactory.get_dataset_meta(identifier="identifier_1",
@@ -36,8 +32,8 @@ class TestSplitter:
 
     @pytest.fixture
     def dataset_iterator_stratifiable(self) -> DatasetIteratorIF:
-        return SequenceDatasetIterator(dataset_sequences=[list(range(20)), list(np.ones(8, dtype=int))+
-                                                                            list(np.zeros(12, dtype=int))])
+        return SequenceDatasetIterator(dataset_sequences=[list(range(200)), list(np.ones(50, dtype=int))+
+                                                                            list(np.zeros(150, dtype=int))])
 
     def test_random_splitter(self, ratios: List[int], dataset_iterator: DatasetIteratorIF):
         splitter_impl = RandomSplitterImpl(ratios=ratios, seed=100)
@@ -46,22 +42,24 @@ class TestSplitter:
 
         assert sorted([i for split in iterator_splits for i in split]) == sorted(dataset_iterator)
 
-    def test_stratified_splitter(self, split_config: Dict[str, int], dataset_iterator_stratifiable: DatasetIteratorIF):
-        splitter_impl = StratifiedSplitterImpl(split_config=split_config)
+    def test_stratified_splitter(self, ratios: List[float], dataset_iterator_stratifiable: DatasetIteratorIF):
+        splitter_impl = StratifiedSplitterImpl(ratios=ratios)
         splitter = Splitter(splitter_impl)
         iterator_splits = splitter.split(dataset_iterator_stratifiable)
 
         assert sorted([i for split in iterator_splits for i in split]) == sorted(dataset_iterator_stratifiable)
 
-    def test_stratification(self, split_config: Dict[str, int], dataset_iterator_stratifiable: DatasetIteratorIF):
-        splitter_impl = StratifiedSplitterImpl(split_config=split_config)
+    def test_stratification(self, ratios: List[float], dataset_iterator_stratifiable: DatasetIteratorIF):
+        splitter_impl = StratifiedSplitterImpl(ratios=ratios)
         splitter = Splitter(splitter_impl)
         iterator_splits = splitter.split(dataset_iterator_stratifiable)
 
         # target distribution should be equal among all splits
-        assert(sum([sample[1] for sample in iterator_splits[0]]) == 4)
-        assert(sum([sample[1] for sample in iterator_splits[1]]) == 2)
-        assert(sum([sample[1] for sample in iterator_splits[2]]) == 2)
+        assert(sum([sample[1] for sample in iterator_splits[0]]) == 15)
+        assert(sum([sample[1] for sample in iterator_splits[1]]) == 15)
+        assert(sum([sample[1] for sample in iterator_splits[2]]) == 10)
+        assert (sum([sample[1] for sample in iterator_splits[3]]) == 5)
+        assert (sum([sample[1] for sample in iterator_splits[4]]) == 5)
 
     @pytest.mark.parametrize(
         "num_outer_loop_folds, num_inner_loop_folds, inner_stratification, outer_stratification, shuffle",

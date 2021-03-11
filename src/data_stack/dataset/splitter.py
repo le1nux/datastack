@@ -16,8 +16,8 @@ class SplitterFactory:
         return Splitter(splitter_impl=RandomSplitterImpl(ratios, seed=seed))
 
     @staticmethod
-    def get_stratified_splitter(split_config: Dict):
-        return Splitter(splitter_impl=StratifiedSplitterImpl(split_config))
+    def get_stratified_splitter(ratios: List[float]):
+        return Splitter(splitter_impl=StratifiedSplitterImpl(ratios))
 
     def get_nested_cv_splitter(num_outer_loop_folds: int = 5, num_inner_loop_folds: int = 2,
                                inner_stratification: bool = True, outer_stratification: bool = True,
@@ -66,7 +66,7 @@ class RandomSplitterImpl(SplitterIF):
 
         return [DatasetIteratorView(dataset_iterator, split_indices) for split_indices in splits_indices]
 
-    def _determine_split_indices(self, dataset_length: int, ratios: List[int]) -> List[List[int]]:
+    def _determine_split_indices(self, dataset_length: int, ratios: List[float]) -> List[List[int]]:
         def ratio_to_index(ratio: float) -> int:
             return int(ratio*dataset_length)
 
@@ -91,44 +91,37 @@ class RandomSplitterImpl(SplitterIF):
 
 class StratifiedSplitterImpl(SplitterIF):
 
-    def __init__(self, split_config: Dict):
-        self.split_config = split_config
+    def __init__(self, ratios: List[float]):
+        self.ratios = ratios
 
     def split(self, dataset_iterator: DatasetIteratorIF) -> List[DatasetIteratorIF]:
         dataset_length = len(dataset_iterator)
-        splits_indices = self._determine_split_indices(dataset_length, self.split_config, dataset_iterator)
+        splits_indices = self._determine_split_indices(dataset_length, self.ratios, dataset_iterator)
 
         return [DatasetIteratorView(dataset_iterator, split_indices) for split_indices in splits_indices]
 
-    def _determine_split_indices(self, dataset_length: int, split_config: Dict, dataset_iterator: DatasetIteratorIF)\
+    def _determine_split_indices(self, dataset_length: int, ratios: List[float], dataset_iterator: DatasetIteratorIF)\
             -> List[List[int]]:
-        indices = list(range(dataset_length))
-        targets = [sample[1] for sample in dataset_iterator]
+        indices_remaining = list(range(dataset_length))
+        initial_length = len(indices_remaining)
+        targets_remaining = [sample[1] for sample in dataset_iterator]
 
         split_indices: List[List[int]] = []
 
-        # split the training set until the desired number of splits is reached
-        if "train" in split_config.keys():
-            train_indices, test_indices, _, test_targets = train_test_split(indices, targets,
-                                                    train_size = int(len(indices)*split_config["train"]),
-                                                    stratify=targets)
-            split_indices.append(train_indices)
-        else:
-            logging.error("Training split was not provided")
-            sys.exit(1)
-        for split in list(split_config.keys())[:-1]:
-            if split != "train":
-                train_indices, test_indices, _, test_targets = train_test_split(test_indices, test_targets,
-                                                    train_size = int(len(indices)*split_config[split]),
-                                                    stratify=test_targets)
-                split_indices.append(train_indices)
+        # split the data set until the desired number of splits is reached
+        for split_ratio in ratios[:-1]:
+            indices_split, indices_remaining, _, targets_remaining = train_test_split(indices_remaining,
+                                                targets_remaining,
+                                                train_size = int(initial_length*split_ratio),
+                                                stratify=targets_remaining)
+            split_indices.append(indices_split)
         # any remaining indices are added to the last split
-        split_indices.append(test_indices)
+        split_indices.append(indices_remaining)
         return split_indices
 
     def get_indices(self, dataset_iterator: DatasetIteratorIF) -> List[List[int]]:
         dataset_length = len(dataset_iterator)
-        splits_indices = self._determine_split_indices(dataset_length, self.split_config, dataset_iterator)
+        splits_indices = self._determine_split_indices(dataset_length, self.ratios, dataset_iterator)
         return splits_indices
 
 
