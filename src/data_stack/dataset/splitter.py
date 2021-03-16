@@ -91,9 +91,7 @@ class StratifiedSplitterImpl(SplitterIF):
 
     def __init__(self, ratios: List[float], seed: Optional[int] = None):
         self.ratios = ratios
-        self.seed = seed
-        self.shuffle = self.seed is not None
-            
+        self.seed = seed            
 
     def split(self, dataset_iterator: DatasetIteratorIF) -> List[DatasetIteratorIF]:
         dataset_length = len(dataset_iterator)
@@ -114,7 +112,7 @@ class StratifiedSplitterImpl(SplitterIF):
             indices_split, indices_remaining, _, targets_remaining = train_test_split(indices_remaining,
                                                 targets_remaining,
                                                 train_size = int(initial_length*split_ratio),
-                                                stratify=targets_remaining, random_state=self.seed, shuffle=self.shuffle)
+                                                stratify=targets_remaining, random_state=self.seed, shuffle=True)
             split_indices.append(indices_split)
         # any remaining indices are added to the last split
         split_indices.append(indices_remaining)
