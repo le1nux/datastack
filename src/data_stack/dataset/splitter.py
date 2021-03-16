@@ -1,6 +1,7 @@
 from data_stack.dataset.iterator import DatasetIteratorIF, DatasetIteratorView
-from typing import List, Tuple, Any
+from typing import List, Tuple, Any, Optional
 from abc import ABC, abstractmethod
+from sklearn.model_selection import train_test_split
 import random
 from sklearn.model_selection import StratifiedKFold, KFold
 import numpy as np
@@ -13,6 +14,9 @@ class SplitterFactory:
         return Splitter(splitter_impl=RandomSplitterImpl(ratios, seed=seed))
 
     @staticmethod
+    def get_stratified_splitter(ratios: List[float], seed: int):
+        return Splitter(splitter_impl=StratifiedSplitterImpl(ratios, seed=seed))
+
     def get_nested_cv_splitter(num_outer_loop_folds: int = 5, num_inner_loop_folds: int = 2,
                                inner_stratification: bool = True, outer_stratification: bool = True,
                                target_pos: int = 1, shuffle: bool = True, seed: int = 1):
@@ -24,7 +28,6 @@ class SplitterFactory:
                                              shuffle=shuffle,
                                              seed=seed)
         return Splitter(splitter_impl=splitter_impl)
-
 
 class SplitterIF(ABC):
 
@@ -61,7 +64,7 @@ class RandomSplitterImpl(SplitterIF):
 
         return [DatasetIteratorView(dataset_iterator, split_indices) for split_indices in splits_indices]
 
-    def _determine_split_indices(self, dataset_length: int, ratios: List[int]) -> List[List[int]]:
+    def _determine_split_indices(self, dataset_length: int, ratios: List[float]) -> List[List[int]]:
         def ratio_to_index(ratio: float) -> int:
             return int(ratio*dataset_length)
 
@@ -81,6 +84,43 @@ class RandomSplitterImpl(SplitterIF):
     def get_indices(self, dataset_iterator: DatasetIteratorIF) -> List[List[int]]:
         dataset_length = len(dataset_iterator)
         splits_indices = self._determine_split_indices(dataset_length, self.ratios)
+        return splits_indices
+
+
+class StratifiedSplitterImpl(SplitterIF):
+
+    def __init__(self, ratios: List[float], seed: Optional[int] = None):
+        self.ratios = ratios
+        self.seed = seed            
+
+    def split(self, dataset_iterator: DatasetIteratorIF) -> List[DatasetIteratorIF]:
+        dataset_length = len(dataset_iterator)
+        splits_indices = self._determine_split_indices(dataset_length, self.ratios, dataset_iterator)
+
+        return [DatasetIteratorView(dataset_iterator, split_indices) for split_indices in splits_indices]
+
+    def _determine_split_indices(self, dataset_length: int, ratios: List[float], dataset_iterator: DatasetIteratorIF)\
+            -> List[List[int]]:
+        indices_remaining = list(range(dataset_length))
+        initial_length = len(indices_remaining)
+        targets_remaining = [sample[1] for sample in dataset_iterator]
+
+        split_indices: List[List[int]] = []
+
+        # split the data set until the desired number of splits is reached
+        for split_ratio in ratios[:-1]:
+            indices_split, indices_remaining, _, targets_remaining = train_test_split(indices_remaining,
+                                                targets_remaining,
+                                                train_size = int(initial_length*split_ratio),
+                                                stratify=targets_remaining, random_state=self.seed, shuffle=True)
+            split_indices.append(indices_split)
+        # any remaining indices are added to the last split
+        split_indices.append(indices_remaining)
+        return split_indices
+
+    def get_indices(self, dataset_iterator: DatasetIteratorIF) -> List[List[int]]:
+        dataset_length = len(dataset_iterator)
+        splits_indices = self._determine_split_indices(dataset_length, self.ratios, dataset_iterator)
         return splits_indices
 
 
@@ -132,3 +172,4 @@ class NestedCVSplitterImpl(SplitterIF):
         inner_fold_indices = [[fold.indices.tolist() for fold in folds] for folds in inner_folds_list]
 
         return outer_folds_indices, inner_fold_indices
+
