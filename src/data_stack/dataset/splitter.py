@@ -1,10 +1,8 @@
 from data_stack.dataset.iterator import DatasetIteratorIF, DatasetIteratorView
-from typing import List, Tuple, Any, Dict
+from typing import List, Tuple, Any, Optional
 from abc import ABC, abstractmethod
 from sklearn.model_selection import train_test_split
-import logging
 import random
-import sys
 from sklearn.model_selection import StratifiedKFold, KFold
 import numpy as np
 
@@ -16,8 +14,8 @@ class SplitterFactory:
         return Splitter(splitter_impl=RandomSplitterImpl(ratios, seed=seed))
 
     @staticmethod
-    def get_stratified_splitter(ratios: List[float]):
-        return Splitter(splitter_impl=StratifiedSplitterImpl(ratios))
+    def get_stratified_splitter(ratios: List[float], seed: int):
+        return Splitter(splitter_impl=StratifiedSplitterImpl(ratios, seed=seed))
 
     def get_nested_cv_splitter(num_outer_loop_folds: int = 5, num_inner_loop_folds: int = 2,
                                inner_stratification: bool = True, outer_stratification: bool = True,
@@ -91,8 +89,9 @@ class RandomSplitterImpl(SplitterIF):
 
 class StratifiedSplitterImpl(SplitterIF):
 
-    def __init__(self, ratios: List[float]):
+    def __init__(self, ratios: List[float], seed: Optional[int] = None):
         self.ratios = ratios
+        self.seed = seed
 
     def split(self, dataset_iterator: DatasetIteratorIF) -> List[DatasetIteratorIF]:
         dataset_length = len(dataset_iterator)
@@ -113,7 +112,7 @@ class StratifiedSplitterImpl(SplitterIF):
             indices_split, indices_remaining, _, targets_remaining = train_test_split(indices_remaining,
                                                 targets_remaining,
                                                 train_size = int(initial_length*split_ratio),
-                                                stratify=targets_remaining)
+                                                stratify=targets_remaining, random_state=self.seed, shuffle=True)
             split_indices.append(indices_split)
         # any remaining indices are added to the last split
         split_indices.append(indices_remaining)
