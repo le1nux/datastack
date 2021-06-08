@@ -44,7 +44,7 @@ To implement a new dataset, one has to implement 3 classes:
 * **Preprocessing:** Datasets often come compressed, split up over many files or in who knows what structure. Therefore, for each dataset we need a Preprocessing class that transforms the datasets into a `StreamedResource`. 
 * **Iterator:** Provides the iteration implementation on top of the binary stream `StreamedResource`
 
-DataStack provides a [examplary MNIST implementation](https://github.com/le1nux/datastack/blob/master/src/data_stack/mnist_example/factory.py). 
+DataStack provides a [examplary MNIST implementation](https://github.com/le1nux/datastack/blob/master/src/data_stack/mnist/factory.py). 
 
 ## Copyright
 

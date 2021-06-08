@@ -21,19 +21,23 @@ class MNISTFactory(BaseDatasetFactory):
         self.resource_definitions = {
             "train": [
                 ResourceDefinition(identifier=os.path.join(self.raw_path, "samples_train.gz"),
-                                   source='http://yann.lecun.com/exdb/mnist/train-images-idx3-ubyte.gz',
+#                                  source='http://yann.lecun.com/exdb/mnist/train-images-idx3-ubyte.gz',
+                                   source='http://ossci-datasets.s3.amazonaws.com/mnist/train-images-idx3-ubyte.gz',
                                    md5_sum="f68b3c2dcbeaaa9fbdd348bbdeb94873"),
                 ResourceDefinition(identifier=os.path.join(self.raw_path, "labels_train.gz"),
-                                   source='http://yann.lecun.com/exdb/mnist/train-labels-idx1-ubyte.gz',
+#                                  source='http://yann.lecun.com/exdb/mnist/train-labels-idx1-ubyte.gz',
+                                   source='http://ossci-datasets.s3.amazonaws.com/mnist/train-labels-idx1-ubyte.gz',
                                    md5_sum="d53e105ee54ea40749a09fcbcd1e9432")
 
             ],
             "test": [
                 ResourceDefinition(identifier=os.path.join(self.raw_path, "samples_test.gz"),
-                                   source='http://yann.lecun.com/exdb/mnist/t10k-images-idx3-ubyte.gz',
+#                                  source='http://yann.lecun.com/exdb/mnist/t10k-images-idx3-ubyte.gz',
+                                   source='https://ossci-datasets.s3.amazonaws.com/mnist/t10k-images-idx3-ubyte.gz',
                                    md5_sum="9fb629c4189551a2d022fa330f9573f3"),
                 ResourceDefinition(identifier=os.path.join(self.raw_path, "targets.gz"),
-                                   source='http://yann.lecun.com/exdb/mnist/t10k-labels-idx1-ubyte.gz',
+#                                  source='http://yann.lecun.com/exdb/mnist/t10k-labels-idx1-ubyte.gz',
+                                   source='https://ossci-datasets.s3.amazonaws.com/mnist/t10k-labels-idx1-ubyte.gz',
                                    md5_sum="ec29112dd5afa0611ce80d1b7f02629c")
             ]
         }
@@ -94,6 +98,7 @@ if __name__ == "__main__":
 
     mnist_factory = MNISTFactory(storage_connector)
     mnist_iterator, _ = mnist_factory.get_dataset_iterator(config={"split": "train"})
-    img, target = mnist_iterator[0]
+    img, target, _ = mnist_iterator[0]
+    print("Target = ", target)
     plt.imshow(img)
     plt.show()
