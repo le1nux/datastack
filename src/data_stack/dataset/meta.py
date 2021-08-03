@@ -127,7 +127,8 @@ class MetaFactory:
                             tag_pos=tag_pos)
 
     @staticmethod
-    def get_dataset_meta(identifier: str = None, dataset_name: str = None, dataset_tag: str = None, iterator_meta: IteratorMeta = None) -> DatasetMetaIF:
+    def get_dataset_meta(identifier: str = None, dataset_name: str = None, dataset_tag: str = None,
+                         iterator_meta: IteratorMeta = None) -> DatasetMetaIF:
         return DatasetMeta(identifier=identifier,
                            dataset_name=dataset_name,
                            dataset_tag=dataset_tag,
@@ -138,7 +139,8 @@ class MetaFactory:
         return deepcopy(dataset_meta)
 
     @staticmethod
-    def get_dataset_meta_from_existing(dataset_meta: DatasetMeta, identifier: str = None, dataset_name: str = None, dataset_tag: str = None) -> DatasetMetaIF:
+    def get_dataset_meta_from_existing(dataset_meta: DatasetMeta, identifier: str = None, dataset_name: str = None,
+                                       dataset_tag: str = None) -> DatasetMetaIF:
         dataset_meta = MetaFactory.copy_dataset_meta(dataset_meta)
 
         return WrappedDatasetMeta(dataset_meta=dataset_meta,
