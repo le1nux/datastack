@@ -1,8 +1,10 @@
 import pytest
 from typing import List, Any, Tuple
 from data_stack.dataset.iterator import DatasetIteratorIF, SequenceDatasetIterator, DatasetIteratorView, \
-     CombinedDatasetIterator, InMemoryDatasetIterator
+    CombinedDatasetIterator, InMemoryDatasetIterator
+from data_stack.dataset.factory import InformedDatasetFactory
 from itertools import chain
+from data_stack.dataset.meta import MetaFactory
 
 
 class TestIterator:
@@ -64,3 +66,12 @@ class TestIterator:
             assert orig_sample[2] == iterator_sample[2]
 
         assert len(in_memory_iterator) == len(sequences[0])
+
+    def test_shuffled_dataset_iterator(self, dataset_iterator: DatasetIteratorIF):
+        meta = MetaFactory.get_dataset_meta(identifier="id_1")
+        shuffled_iterator = InformedDatasetFactory.get_shuffled_dataset_iterator(dataset_iterator, meta, seed=1)
+        indices = list(range(len(dataset_iterator)))
+        assert len(shuffled_iterator._dataset_iterator.indices) == len(indices) and \
+            len(indices) == len(set(indices)) and \
+            len(indices) == len(set(indices).intersection(set(shuffled_iterator._dataset_iterator.indices))) and \
+            any([indice != indices[i] for i, indice in enumerate(shuffled_iterator._dataset_iterator.indices)])

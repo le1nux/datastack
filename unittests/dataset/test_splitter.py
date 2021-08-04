@@ -3,7 +3,7 @@ import numpy as np
 import collections
 from data_stack.dataset.iterator import DatasetIteratorIF, SequenceDatasetIterator
 from typing import List
-from data_stack.dataset.splitter import RandomSplitterImpl, StratifiedSplitterImpl, Splitter, NestedCVSplitterImpl
+from data_stack.dataset.splitter import RandomSplitterImpl, StratifiedSplitterImpl, Splitter, NestedCVSplitterImpl, CVSplitterImpl
 from data_stack.dataset.meta import DatasetMeta, MetaFactory
 
 
@@ -32,8 +32,8 @@ class TestSplitter:
 
     @pytest.fixture
     def dataset_iterator_stratifiable(self) -> DatasetIteratorIF:
-        return SequenceDatasetIterator(dataset_sequences=[list(range(200)), list(np.ones(50, dtype=int))+
-                                                                            list(np.zeros(150, dtype=int))])
+        return SequenceDatasetIterator(dataset_sequences=[list(range(200)), list(np.ones(50, dtype=int)) +
+                                                          list(np.zeros(150, dtype=int))])
 
     def test_random_splitter(self, ratios: List[int], dataset_iterator: DatasetIteratorIF):
         splitter_impl = RandomSplitterImpl(ratios=ratios, seed=100)
@@ -93,7 +93,6 @@ class TestSplitter:
         assert (sum([sample[1] for sample in iterator_splits[3]]) == 5)
         assert (sum([sample[1] for sample in iterator_splits[4]]) == 5)
 
-
     @pytest.mark.parametrize(
         "num_outer_loop_folds, num_inner_loop_folds, inner_stratification, outer_stratification, shuffle",
         [(5, 2, True, True, False), (5, 2, True, True, True), (5, 2, False, False, True),
@@ -142,6 +141,31 @@ class TestSplitter:
                     fold_class_counts = dict(collections.Counter([t for _, t in fold]))
                     for key in list(class_counts_per_fold.keys()) + list(fold_class_counts.keys()):
                         assert class_counts_per_fold[key] == fold_class_counts[key]
+
+    @pytest.mark.parametrize(
+        "num_folds, stratification, shuffle",
+        [(5, True, False), (5, True, True), (5, False, True),
+         (5, False, False)],)
+    def test_cv_splitter(self, num_folds: int, stratification: bool, shuffle: bool, big_dataset_iterator: DatasetIteratorIF):
+        splitter_impl = CVSplitterImpl(num_folds=num_folds,
+                                       stratification=stratification,
+                                       shuffle=shuffle)
+        splitter = Splitter(splitter_impl)
+        folds = splitter.split(big_dataset_iterator)
+        # make sure that outer folds have no intersection
+        for i in range(len(folds)):
+            for j in range(len(folds)):
+                if i != j:
+                    # makes sure there is no intersection
+                    assert len(set(folds[i].indices).intersection(set(folds[j].indices))) == 0
+        # test stratification
+        if stratification:
+            class_counts = dict(collections.Counter([t for _, t in big_dataset_iterator]))
+            class_counts_per_fold = {target_class: int(count / num_folds) for target_class, count in class_counts.items()}
+            for fold in folds:
+                fold_class_counts = dict(collections.Counter([t for _, t in fold]))
+                for key in list(class_counts_per_fold.keys()) + list(fold_class_counts.keys()):
+                    assert class_counts_per_fold[key] == fold_class_counts[key]
 
     def test_seeding(self):
         ratios = [0.4, 0.6]

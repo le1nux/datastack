@@ -17,6 +17,7 @@ class SplitterFactory:
     def get_stratified_splitter(ratios: List[float], seed: int):
         return Splitter(splitter_impl=StratifiedSplitterImpl(ratios, seed=seed))
 
+    @staticmethod
     def get_nested_cv_splitter(num_outer_loop_folds: int = 5, num_inner_loop_folds: int = 2,
                                inner_stratification: bool = True, outer_stratification: bool = True,
                                target_pos: int = 1, shuffle: bool = True, seed: int = 1):
@@ -28,6 +29,16 @@ class SplitterFactory:
                                              shuffle=shuffle,
                                              seed=seed)
         return Splitter(splitter_impl=splitter_impl)
+
+    @staticmethod
+    def get_cv_splitter(num_folds: int = 5, stratification: bool = True, target_pos: int = 1, shuffle: bool = True, seed: int = 1):
+        splitter_impl = CVSplitterImpl(num_folds=num_folds,
+                                       stratification=stratification,
+                                       target_pos=target_pos,
+                                       shuffle=shuffle,
+                                       seed=seed)
+        return Splitter(splitter_impl=splitter_impl)
+
 
 class SplitterIF(ABC):
 
@@ -91,7 +102,7 @@ class StratifiedSplitterImpl(SplitterIF):
 
     def __init__(self, ratios: List[float], seed: Optional[int] = None):
         self.ratios = ratios
-        self.seed = seed            
+        self.seed = seed
 
     def split(self, dataset_iterator: DatasetIteratorIF) -> List[DatasetIteratorIF]:
         dataset_length = len(dataset_iterator)
@@ -110,9 +121,9 @@ class StratifiedSplitterImpl(SplitterIF):
         # split the data set until the desired number of splits is reached
         for split_ratio in ratios[:-1]:
             indices_split, indices_remaining, _, targets_remaining = train_test_split(indices_remaining,
-                                                targets_remaining,
-                                                train_size = int(initial_length*split_ratio),
-                                                stratify=targets_remaining, random_state=self.seed, shuffle=True)
+                                                                                      targets_remaining,
+                                                                                      train_size=int(initial_length*split_ratio),
+                                                                                      stratify=targets_remaining, random_state=self.seed, shuffle=True)
             split_indices.append(indices_split)
         # any remaining indices are added to the last split
         split_indices.append(indices_remaining)
@@ -173,3 +184,31 @@ class NestedCVSplitterImpl(SplitterIF):
 
         return outer_folds_indices, inner_fold_indices
 
+
+class CVSplitterImpl(SplitterIF):
+
+    def __init__(self,
+                 num_folds: int = 5,
+                 stratification: bool = True,
+                 target_pos: int = 1,
+                 shuffle: bool = True,
+                 seed: int = 1):
+        self.num_folds = num_folds
+        self.random_state = np.random.RandomState(seed=seed) if shuffle else None
+        self.target_pos = target_pos
+
+        if stratification:
+            self.splitter = StratifiedKFold(n_splits=num_folds, shuffle=shuffle, random_state=self.random_state)
+        else:
+            self.splitter = KFold(n_splits=num_folds, shuffle=shuffle, random_state=self.random_state)
+
+    def split(self, dataset_iterator: DatasetIteratorIF) -> List[DatasetIteratorView]:
+        targets = np.array([sample[self.target_pos] for sample in dataset_iterator])
+        folds_indices = [fold[1].tolist() for fold in self.splitter.split(X=np.zeros(len(targets)), y=targets)]
+        fold_iterators = [DatasetIteratorView(dataset_iterator, fold_indices) for fold_indices in folds_indices]
+        return fold_iterators
+
+    def get_indices(self, dataset_iterator: DatasetIteratorIF) -> List[List[int]]:
+        folds = self.split(dataset_iterator)
+        folds_indices = [fold.indices for fold in folds]
+        return folds_indices

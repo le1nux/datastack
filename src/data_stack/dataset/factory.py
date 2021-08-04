@@ -4,6 +4,7 @@ from data_stack.dataset.iterator import DatasetIteratorIF, InformedDatasetIterat
     DatasetIteratorView, InMemoryDatasetIterator
 from typing import Tuple, List, Dict, Any
 from data_stack.dataset.meta import IteratorMeta, DatasetMeta
+import random
 
 
 class BaseDatasetFactory(ABC):
@@ -46,3 +47,11 @@ class InformedDatasetFactory:
     def get_in_memory_dataset_iterator(iterator: DatasetIteratorIF, meta: DatasetMeta) -> InformedDatasetIteratorIF:
         in_memory_iterator = InMemoryDatasetIterator(iterator)
         return InformedDatasetIterator(in_memory_iterator, meta)
+
+    @staticmethod
+    def get_shuffled_dataset_iterator(iterator: DatasetIteratorIF, meta: DatasetMeta, seed: int) -> InformedDatasetIteratorIF:
+        random_gen = random.Random(seed)
+        indices = list(range(len(iterator)))
+        random_gen.shuffle(indices)
+        iterator_view = InformedDatasetFactory.get_dataset_iterator_view(iterator, meta, indices)
+        return iterator_view
