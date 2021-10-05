@@ -36,8 +36,9 @@ class MNISTPreprocessor:
         with self.storage_connector.get_resource(raw_identifier) as raw_resource:
             with PreprocessingHelpers.get_gzip_stream(resource=raw_resource) as unzipped_resource:
                 torch_tensor = MNISTPreprocessor._read_image_file(unzipped_resource)
-        torch_tensor = transforms.Normalize((0.1307,), (0.3081,))(torch_tensor)
-        resource = self._torch_tensor_to_streamed_resource(prep_identifier, torch_tensor)
+        img_transformed = [transforms.ToTensor()(torch_tensor[i].numpy()) for i in range(len(torch_tensor))]
+        img_tensor = torch.cat(img_transformed, dim=0)
+        resource = self._torch_tensor_to_streamed_resource(prep_identifier, img_tensor)
         return resource
 
     @classmethod
@@ -58,10 +59,32 @@ class MNISTPreprocessor:
     def _read_image_file(cls, resource: StreamedResource):
         data = resource.read()
         assert cls._get_int(data[:4]) == 2051
-        length = cls._get_int(data[4:8])
-        num_rows = cls._get_int(data[8:12])
-        num_cols = cls._get_int(data[12:16])
-        parsed = np.frombuffer(data, dtype=np.uint8, offset=16)
-        torch_tensor = torch.from_numpy(parsed).view(length, num_rows, num_cols)
-        torch_tensor = torch_tensor.float()
-        return torch_tensor
+        return MNISTPreprocessor.read_sn3_pascalvincent_tensor(data, strict=False)
+
+    @staticmethod
+    def read_sn3_pascalvincent_tensor(data, strict: bool = True) -> torch.Tensor:
+        """Read a SN3 file in "Pascal Vincent" format (Lush file 'libidx/idx-io.lsh').
+        Argument may be a filename, compressed filename, or file object.
+        """
+        def get_int(b: bytes) -> int:
+            return int(codecs.encode(b, 'hex'), 16)
+
+        SN3_PASCALVINCENT_TYPEMAP = {
+            8: (torch.uint8, np.uint8, np.uint8),
+            9: (torch.int8, np.int8, np.int8),
+            11: (torch.int16, np.dtype('>i2'), 'i2'),
+            12: (torch.int32, np.dtype('>i4'), 'i4'),
+            13: (torch.float32, np.dtype('>f4'), 'f4'),
+            14: (torch.float64, np.dtype('>f8'), 'f8')
+        }
+        # parse
+        magic = get_int(data[0:4])
+        nd = magic % 256
+        ty = magic // 256
+        assert 1 <= nd <= 3
+        assert 8 <= ty <= 14
+        m = SN3_PASCALVINCENT_TYPEMAP[ty]
+        s = [get_int(data[4 * (i + 1): 4 * (i + 2)]) for i in range(nd)]
+        parsed = np.frombuffer(data, dtype=m[1], offset=(4 * (nd + 1)))
+        assert parsed.shape[0] == np.prod(s) or not strict
+        return torch.from_numpy(parsed.astype(m[2])).view(*s)
