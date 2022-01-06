@@ -1,5 +1,6 @@
-![DataStack_logo](https://user-images.githubusercontent.com/47029859/148431255-540c7e22-0e3a-4994-839a-94acff21d9bd.png)
 
+
+![DataStack_logo](https://user-images.githubusercontent.com/47029859/148431377-239f5a0a-fc84-47f0-91a6-a874f634f43b.png)
 
 
 
