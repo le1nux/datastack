@@ -1,11 +1,11 @@
-![DataStack_logo](https://user-images.githubusercontent.com/47029859/148428183-55abf10d-d4e2-40ef-84e8-66618ce93c4c.png)
 
+![DataStack_logo](https://user-images.githubusercontent.com/47029859/148428693-cf0ffad3-5389-4995-8545-9f267a0661f0.png)
 
-
+_______________________________________________________________________________
 
 DataStack
 
-a stream-based file storage solution for machine learning datasets.
+A stream-based file storage solution for machine learning datasets.
 
 [![PyPI version](https://badge.fury.io/py/datastack.svg)](https://badge.fury.io/py/datastack)
 [![CircleCI](https://circleci.com/gh/le1nux/datastack.svg?style=svg)](https://circleci.com/gh/le1nux/datastack)
