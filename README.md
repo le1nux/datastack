@@ -36,6 +36,63 @@ pip install src/
 
 ## Usage
 
+The following tutorial is also available as a Jupyter notebook [here]().
+
+The existing examplary MNIST dataset can be loaded and iterated as follows:
+
+```python
+from data_stack.mnist.factory import MNISTFactory
+from data_stack.io.storage_connectors import FileStorageConnector
+```
+
+Create the file storage connector to store and retrieve the dataset.
+
+```python
+dataset_path = "./datasets/"   # specify dataset path
+storage_connector = FileStorageConnector(root_path=dataset_path)
+```
+
+We instantiate the MNIST factory by passing the `storage_connector`. If the dataset has been already downloaded it is being only loaded from the local disc.
+
+In this example here, the MNIST dataset is not present locally and is thus being donwloaded.
+
+```python
+mnist_factory = MNISTFactory(storage_connector)
+mnist_iterator, _ = mnist_factory.get_dataset_iterator(config={"split": "train"})
+```
+
+The following files are stored by the `storage_connector`: 
+
+```
+datasets/
+└── mnist
+    ├── preprocessed
+    │   ├── test
+    │   │   ├── samples.pt
+    │   │   └── targets.pt
+    │   └── train
+    │       ├── samples.pt
+    │       └── targets.pt
+    └── raw
+        ├── labels_train.gz
+        ├── samples_test.gz
+        ├── samples_train.gz
+        └── targets.gz
+```
+
+Now, we can directly index elements or easily iterate through the dataset.
+
+```python 
+img, target, tag = mnist_iterator[0]
+print(f"Sample has target {target} and tag {tag} and has a shape of {img.shape}")
+
+# visualize the sample
+from matplotlib import pyplot as plt
+plt.imshow(img)
+plt.show()
+```
+
+
 **NOTE: This library is still under heavy development. It's most likely not free of bugs and interfaces can still change.**
 
 To implement a new dataset, one has to implement 3 classes: 
