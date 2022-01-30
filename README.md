@@ -36,7 +36,7 @@ pip install src/
 
 ## Usage
 
-The following tutorial is also available as a Jupyter notebook [here]().
+The following tutorial is also available as a Jupyter notebook [here](https://github.com/le1nux/datastack/blob/master/getting_started_example/getting_started.ipynb).
 
 The existing examplary MNIST dataset can be loaded and iterated as follows:
 
