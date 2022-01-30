@@ -1,4 +1,4 @@
-from abc import ABC
+from abc import ABC, abstractmethod
 from data_stack.io.storage_connectors import StorageConnector
 from data_stack.dataset.iterator import DatasetIteratorIF, InformedDatasetIteratorIF, InformedDatasetIterator, CombinedDatasetIterator, \
     DatasetIteratorView, InMemoryDatasetIterator
@@ -12,6 +12,7 @@ class BaseDatasetFactory(ABC):
     def __init__(self, storage_connector: StorageConnector = None):
         self.storage_connector = storage_connector
 
+    @abstractmethod
     def get_dataset_iterator(self, config: Dict[str, Any] = None) -> Tuple[DatasetIteratorIF, IteratorMeta]:
         raise NotImplementedError
 
