@@ -113,3 +113,4 @@ example_file_storage
 logo/logo.svg
 file_storage
 exfile_storage
+.DS_Store
