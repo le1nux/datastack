@@ -1,4 +1,8 @@
-# DataStack
+<div align="center">
+<img src="https://raw.githubusercontent.com/le1nux/datastack/master/logo/dataStack.svg" width="400px">
+</div>
+
+---
 
 a stream-based file storage solution for machine learning datasets.
 
